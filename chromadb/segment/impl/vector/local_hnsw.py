@@ -153,9 +153,16 @@ class LocalHnswSegment(VectorReader):
         query_vectors = query["vectors"]
 
         with ReadRWLock(self._lock):
+
+            # TODO
+            print(f"[{self.__class__.__name__} - LocalHnswSegment.query_vectors 1] {self._index=}")
+
             result_labels, distances = self._index.knn_query(
                 query_vectors, k=k, filter=filter_function if ids else None
             )
+
+            # TODO
+            print(f"[{self.__class__.__name__} - LocalHnswSegment.query_vectors 2] {result_labels=} {distances=}")
 
             # TODO: these casts are not correct, hnswlib returns np
             # distances = cast(List[List[float]], distances)

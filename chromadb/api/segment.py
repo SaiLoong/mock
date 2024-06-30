@@ -741,7 +741,7 @@ class SegmentAPI(ServerAPI):
             vector_reader = self._manager.get_segment(collection_id, VectorReader)
 
             # TODO
-            print(f"[{self.__class__.__name__} - SegmentAPI._query 1] {vector_reader=} {query=}")
+            print(f"[{self.__class__.__name__} - SegmentAPI._query 1] {vector_reader=}")
 
             results = vector_reader.query_vectors(query)
 
