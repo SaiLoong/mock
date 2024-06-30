@@ -82,7 +82,7 @@ class Collection(CollectionCommon["ServerAPI"]):
         )
 
         # TODO
-        # print(f"[{self.__class__.__name__} - Collection.add] {embeddings=}")
+        print(f"[{self.__class__.__name__} - Collection.add] {embeddings=}")
 
         self._client._add(ids, self.id, embeddings, metadatas, documents, uris)
 
@@ -194,6 +194,9 @@ class Collection(CollectionCommon["ServerAPI"]):
             where_document,
             include,
         )
+
+        # TODO
+        print(f"[{self.__class__.__name__} - Collection.query] {valid_query_embeddings=}")
 
         query_results = self._client._query(
             collection_id=self.id,
