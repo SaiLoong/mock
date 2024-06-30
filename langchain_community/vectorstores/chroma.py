@@ -132,7 +132,7 @@ class Chroma(VectorStore):
         self.override_relevance_score_fn = relevance_score_fn
 
         # TODO
-        print(f"[{self.__class__.__name__} - Chroma.__init__] {self._collection=}")
+        print(f"[{self.__class__.__name__} - Chroma.__init__] {self._collection.__dict__=}")
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
