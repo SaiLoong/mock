@@ -76,9 +76,6 @@ class LocalHnswSegment(VectorReader):
         self._opentelemtry_client = system.require(OpenTelemetryClient)
         super().__init__(system, segment)
 
-        # TODO
-        print(f"[{self.__class__.__name__} - LocalHnswSegment.__init__] {self._index=} {self._params=}")
-
     @staticmethod
     @override
     def propagate_collection_metadata(metadata: Metadata) -> Optional[Metadata]:
@@ -156,6 +153,10 @@ class LocalHnswSegment(VectorReader):
         query_vectors = query["vectors"]
 
         with ReadRWLock(self._lock):
+
+            # TODO
+            print(f"[{self.__class__.__name__} - LocalHnswSegment.query_vectors] {self._index=} {self._params.space=}")
+
             result_labels, distances = self._index.knn_query(
                 query_vectors, k=k, filter=filter_function if ids else None
             )
