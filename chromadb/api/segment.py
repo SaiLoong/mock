@@ -162,7 +162,7 @@ class SegmentAPI(ServerAPI):
     ) -> Collection:
 
         # TODO
-        print(f"[{self.__class__.__name__} - SegmentAPI.create_collection] {name=} {embedding_function=}")
+        # print(f"[{self.__class__.__name__} - SegmentAPI.create_collection] {name=} {embedding_function=}")
 
         if metadata is not None:
             validate_metadata(metadata)

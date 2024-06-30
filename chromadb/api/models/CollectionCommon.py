@@ -94,7 +94,8 @@ class CollectionCommon(Generic[ClientT]):
         self._data_loader = data_loader
 
         # TODO
-        print(f"[{self.__class__.__name__} - CollectionCommon.__init__] {self._embedding_function=}")
+        print(f"[{self.__class__.__name__} - CollectionCommon.__init__] {self._embedding_function=} {self._client=} "
+              f"{self._model=}")
 
     # Expose the model properties as read-only properties on the Collection class
 

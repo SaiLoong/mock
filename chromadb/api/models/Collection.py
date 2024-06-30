@@ -81,6 +81,9 @@ class Collection(CollectionCommon["ServerAPI"]):
             ids, embeddings, metadatas, documents, images, uris
         )
 
+        # TODO
+        # print(f"[{self.__class__.__name__} - Collection.add] {embeddings=}")
+
         self._client._add(ids, self.id, embeddings, metadatas, documents, uris)
 
     def get(
