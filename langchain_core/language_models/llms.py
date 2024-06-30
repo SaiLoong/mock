@@ -320,11 +320,18 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         return_exceptions: bool = False,
         **kwargs: Any,
     ) -> List[str]:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - BaseLLM.batch 1] {inputs=}")
+
         if not inputs:
             return []
 
         config = get_config_list(config, len(inputs))
         max_concurrency = config[0].get("max_concurrency")
+
+        # TODO
+        print(f"[{self.__class__.__name__} - BaseLLM.batch 2] {max_concurrency=}")
 
         if max_concurrency is None:
             try:
@@ -727,7 +734,7 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         """
 
         # TODO
-        print(f"[{self.__class__.__name__} - BaseLLM.generate 1] {prompts=} {stop=}")
+        print(f"[{self.__class__.__name__} - BaseLLM.generate 1] {prompts=}")
 
         if not isinstance(prompts, list):
             raise ValueError(
@@ -818,7 +825,7 @@ class BaseLLM(BaseLanguageModel[str], ABC):
             ]
 
             # TODO
-            print(f"[{self.__class__.__name__} - BaseLLM.generate 2] {prompts=} {stop=} {run_managers=}")
+            print(f"[{self.__class__.__name__} - BaseLLM.generate 2] {prompts=}")
 
             output = self._generate_helper(
                 prompts, stop, run_managers, bool(new_arg_supported), **kwargs
@@ -1335,7 +1342,7 @@ class LLM(BaseLLM):
     ) -> LLMResult:
 
         # TODO
-        print(f"[{self.__class__.__name__} - LLM._generate] {prompts=} {stop=} {run_manager=}")
+        print(f"[{self.__class__.__name__} - LLM._generate 1] {prompts=}")
 
         """Run the LLM on the given prompt and input."""
         # TODO: add caching here.
@@ -1348,6 +1355,10 @@ class LLM(BaseLLM):
                 else self._call(prompt, stop=stop, **kwargs)
             )
             generations.append([Generation(text=text)])
+
+        # TODO
+        print(f"[{self.__class__.__name__} - LLM._generate 2] {generations=}")
+
         return LLMResult(generations=generations)
 
     async def _agenerate(
