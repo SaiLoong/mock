@@ -27,6 +27,11 @@ if TYPE_CHECKING:
     from chromadb.api import ServerAPI  # noqa: F401
 
 
+# TODO
+def l2_norm(embeddings):
+    return np.linalg.norm(np.array(embeddings), axis=1)
+
+
 class Collection(CollectionCommon["ServerAPI"]):
     def count(self) -> int:
         """The total number of embeddings added to the database
@@ -82,7 +87,7 @@ class Collection(CollectionCommon["ServerAPI"]):
         )
 
         # TODO
-        print(f"[{self.__class__.__name__} - Collection.add] {embeddings=}")
+        print(f"[{self.__class__.__name__} - Collection.add] {l2_norm(embeddings)=}")
 
         self._client._add(ids, self.id, embeddings, metadatas, documents, uris)
 
@@ -196,7 +201,7 @@ class Collection(CollectionCommon["ServerAPI"]):
         )
 
         # TODO
-        print(f"[{self.__class__.__name__} - Collection.query] {valid_query_embeddings=}")
+        print(f"[{self.__class__.__name__} - Collection.query 1] {l2_norm(valid_query_embeddings)=}")
 
         query_results = self._client._query(
             collection_id=self.id,
@@ -206,6 +211,9 @@ class Collection(CollectionCommon["ServerAPI"]):
             where_document=valid_where_document,
             include=include,
         )
+
+        # TODO
+        print(f"[{self.__class__.__name__} - Collection.query 2] {query_results=}")
 
         return self._transform_query_response(query_results, include)
 
