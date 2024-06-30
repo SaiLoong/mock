@@ -1,3 +1,6 @@
+# TODO
+print("mock langchain-core==0.2.10")
+
 from importlib import metadata
 
 from langchain_core._api import (
