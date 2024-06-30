@@ -272,6 +272,10 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         **kwargs: Any,
     ) -> str:
         config = ensure_config(config)
+
+        # TODO
+        print(f"[{self.__class__.__name__} - BaseLLM.invoke] {input=}")
+
         return (
             self.generate_prompt(
                 [self._convert_input(input)],
@@ -629,7 +633,15 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         callbacks: Optional[Union[Callbacks, List[Callbacks]]] = None,
         **kwargs: Any,
     ) -> LLMResult:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - BaseLLM.generate_prompt 1] {prompts=}")
+
         prompt_strings = [p.to_string() for p in prompts]
+
+        # TODO
+        print(f"[{self.__class__.__name__} - BaseLLM.generate_prompt 2] {prompt_strings=}")
+
         return self.generate(prompt_strings, stop=stop, callbacks=callbacks, **kwargs)
 
     async def agenerate_prompt(
@@ -713,6 +725,10 @@ class BaseLLM(BaseLanguageModel[str], ABC):
             An LLMResult, which contains a list of candidate Generations for each input
                 prompt and additional model provider-specific output.
         """
+
+        # TODO
+        print(f"[{self.__class__.__name__} - BaseLLM.generate 1] {prompts=} {stop=}")
+
         if not isinstance(prompts, list):
             raise ValueError(
                 "Argument 'prompts' is expected to be of type List[str], received"
@@ -800,6 +816,10 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                     callback_managers, prompts, run_name_list, run_ids_list
                 )
             ]
+
+            # TODO
+            print(f"[{self.__class__.__name__} - BaseLLM.generate 2] {prompts=} {stop=} {run_managers=}")
+
             output = self._generate_helper(
                 prompts, stop, run_managers, bool(new_arg_supported), **kwargs
             )
@@ -1313,6 +1333,10 @@ class LLM(BaseLLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> LLMResult:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - LLM._generate] {prompts=} {stop=} {run_manager=}")
+
         """Run the LLM on the given prompt and input."""
         # TODO: add caching here.
         generations = []
