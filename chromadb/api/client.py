@@ -148,6 +148,10 @@ class Client(SharedSystemClient, ClientAPI):
         ] = ef.DefaultEmbeddingFunction(),  # type: ignore
         data_loader: Optional[DataLoader[Loadable]] = None,
     ) -> Collection:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - Client.get_or_create_collection] {embedding_function=}")
+
         return self._server.get_or_create_collection(
             name=name,
             metadata=metadata,

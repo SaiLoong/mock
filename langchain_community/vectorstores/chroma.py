@@ -131,6 +131,9 @@ class Chroma(VectorStore):
         )
         self.override_relevance_score_fn = relevance_score_fn
 
+        # TODO
+        print(f"[{self.__class__.__name__} - Chroma.__init__] {self._collection=}")
+
     @property
     def embeddings(self) -> Optional[Embeddings]:
         return self._embedding_function
@@ -322,6 +325,10 @@ class Chroma(VectorStore):
                     ids=ids_without_metadatas,
                 )
         else:
+
+            # TODO
+            print(f"[{self.__class__.__name__} - Chroma.add_texts] {embeddings=} {texts=} {ids=}")
+
             self._collection.upsert(
                 embeddings=embeddings,
                 documents=texts,
