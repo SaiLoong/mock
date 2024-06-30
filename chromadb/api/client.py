@@ -114,7 +114,7 @@ class Client(SharedSystemClient, ClientAPI):
     ) -> Collection:
 
         # TODO
-        print(f"[{self.__class__.__name__} - Client.create_collection] {name=} {self._server=}")
+        print(f"[{self.__class__.__name__} - Client.create_collection] {self._server=} {name=} {embedding_function=}")
 
         return self._server.create_collection(
             name=name,
