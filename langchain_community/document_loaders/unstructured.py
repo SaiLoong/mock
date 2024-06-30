@@ -86,7 +86,15 @@ class UnstructuredBaseLoader(BaseLoader, ABC):
     def lazy_load(self) -> Iterator[Document]:
         """Load file."""
         elements = self._get_elements()
+
+        # TODO
+        print(f"[{self.__class__.__name__} - UnstructuredBaseLoader.lazy_load 1] {elements=}")
+
         self._post_process_elements(elements)
+
+        # TODO
+        print(f"[{self.__class__.__name__} - UnstructuredBaseLoader.lazy_load 2] {elements=} {self.mode=}")
+
         if self.mode == "elements":
             for element in elements:
                 metadata = self._get_metadata()
@@ -123,6 +131,10 @@ class UnstructuredBaseLoader(BaseLoader, ABC):
         elif self.mode == "single":
             metadata = self._get_metadata()
             text = "\n\n".join([str(el) for el in elements])
+
+            # TODO
+            print(f"[{self.__class__.__name__} - UnstructuredBaseLoader.lazy_load 3] {text=}")
+
             yield Document(page_content=text, metadata=metadata)
         else:
             raise ValueError(f"mode of {self.mode} not supported.")
@@ -173,6 +185,10 @@ class UnstructuredFileLoader(UnstructuredBaseLoader):
                 if isinstance(file, Path):
                     file = str(file)
                 elements.extend(partition(filename=file, **self.unstructured_kwargs))
+
+            # TODO
+            print(f"[{self.__class__.__name__} - UnstructuredFileLoader._get_elements] {elements=}")
+
             return elements
         else:
             if isinstance(self.file_path, Path):

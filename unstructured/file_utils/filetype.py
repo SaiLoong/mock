@@ -286,6 +286,9 @@ def detect_filetype(
         if mime_type is None:
             return EXT_TO_FILETYPE.get(extension, FileType.UNK)
 
+        # TODO
+        print(f"[detect_filetype 1] {extension=} {mime_type=}")
+
     elif file is not None:
         if hasattr(file, "name"):
             _, extension = os.path.splitext(file.name)
@@ -325,6 +328,10 @@ def detect_filetype(
             return FileType.XML
 
     elif mime_type in TXT_MIME_TYPES or mime_type.startswith("text"):
+
+        # TODO
+        print(f"[detect_filetype 2] choose text")
+
         if not encoding:
             encoding = "utf-8"
         formatted_encoding = format_encoding_str(encoding)
@@ -411,6 +418,10 @@ def detect_filetype(
         f"The MIME type{f' of {filename!r}' if filename else ''} is {mime_type!r}. "
         "This file type is not currently supported in unstructured.",
     )
+
+    # TODO
+    print(f"[detect_filetype 3] warning")
+
     return EXT_TO_FILETYPE.get(extension, FileType.UNK)
 
 

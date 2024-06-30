@@ -195,12 +195,22 @@ def _partition_text(
         metadata = ElementMetadata()
 
     for ctext in file_content:
+
+        # TODO
+        print(f"[_partition_text 1] {ctext=}")
+
         ctext = ctext.strip()
+
+        # TODO
+        print(f"[_partition_text 2] {ctext=}")
 
         if ctext and not is_empty_bullet(ctext):
             element = element_from_text(ctext)
             element.metadata = copy.deepcopy(metadata)
             elements.append(element)
+
+    # TODO
+    print(f"[_partition_text 3] {elements=}")
 
     elements = list(
         apply_lang_metadata(
@@ -209,6 +219,10 @@ def _partition_text(
             detect_language_per_element=detect_language_per_element,
         ),
     )
+
+    # TODO
+    print(f"[_partition_text 4] {elements=}")
+
     return elements
 
 

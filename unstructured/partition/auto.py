@@ -290,6 +290,10 @@ def partition(
                 "The headers kwarg is set but the url kwarg is not. "
                 "The headers kwarg will be ignored.",
             )
+
+        # TODO
+        print(f"[partition 1] {filename=} {file=}")
+
         filetype = detect_filetype(
             filename=filename,
             file=file,
@@ -297,6 +301,9 @@ def partition(
             content_type=content_type,
             encoding=encoding,
         )
+
+        # TODO
+        print(f"[partition 2] {filetype=}")
 
     if file is not None:
         file.seek(0)
@@ -470,6 +477,10 @@ def partition(
             detect_language_per_element=detect_language_per_element,
             **kwargs,
         )
+
+        # TODO
+        print(f"[partition 3] {elements=}")
+
     elif filetype == FileType.RTF:
         _partition_rtf = _get_partition_with_extras("rtf")
         elements = _partition_rtf(
