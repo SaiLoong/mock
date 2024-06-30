@@ -64,6 +64,9 @@ class Client(SharedSystemClient, ClientAPI):
 
         self._submit_client_start_event()
 
+        # TODO
+        print(f"[{self.__class__.__name__} - Client.__init__] {self._server=}")
+
     @classmethod
     @override
     def from_system(
@@ -109,6 +112,10 @@ class Client(SharedSystemClient, ClientAPI):
         data_loader: Optional[DataLoader[Loadable]] = None,
         get_or_create: bool = False,
     ) -> Collection:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - Client.create_collection] {name=} {self._server=}")
+
         return self._server.create_collection(
             name=name,
             metadata=metadata,
