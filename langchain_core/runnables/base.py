@@ -4585,6 +4585,11 @@ class RunnableBindingBase(RunnableSerializable[Input, Output]):
         config: Optional[RunnableConfig] = None,
         **kwargs: Optional[Any],
     ) -> Output:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke 1] {input=} {config=} {kwargs=}")
+        print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke 2] {self.bound=}")
+
         return self.bound.invoke(
             input,
             self._merge_configs(config),

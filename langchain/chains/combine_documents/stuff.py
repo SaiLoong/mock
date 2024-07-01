@@ -76,6 +76,10 @@ def create_stuff_documents_chain(
     _output_parser = output_parser or StrOutputParser()
 
     def format_docs(inputs: dict) -> str:
+
+        # TODO
+        print(f"[create_stuff_documents_chain - format_docs] {inputs=}")
+
         return document_separator.join(
             format_document(doc, _document_prompt) for doc in inputs[DOCUMENTS_KEY]
         )
