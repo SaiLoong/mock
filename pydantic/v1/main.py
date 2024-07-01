@@ -1048,6 +1048,10 @@ _missing = object()
 def validate_model(  # noqa: C901 (ignore complexity)
     model: Type[BaseModel], input_data: 'DictStrAny', cls: 'ModelOrDc' = None
 ) -> Tuple['DictStrAny', 'SetStr', Optional[ValidationError]]:
+
+    # TODO
+    print(f"[validate_model 1] {model=} {input_data=} {cls=}")
+
     """
     validate data against a model.
     """
@@ -1066,6 +1070,9 @@ def validate_model(  # noqa: C901 (ignore complexity)
             input_data = validator(cls_, input_data)
         except (ValueError, TypeError, AssertionError) as exc:
             return {}, set(), ValidationError([ErrorWrapper(exc, loc=ROOT_KEY)], cls_)
+
+    # TODO
+    print(f"[validate_model 2] {values=}")
 
     for name, field in model.__fields__.items():
         value = input_data.get(field.alias, _missing)
@@ -1097,6 +1104,9 @@ def validate_model(  # noqa: C901 (ignore complexity)
         else:
             values[name] = v_
 
+    # TODO
+    print(f"[validate_model 3] {values=}")
+
     if check_extra:
         if isinstance(input_data, GetterDict):
             extra = input_data.extra_keys() - names_used
@@ -1111,6 +1121,9 @@ def validate_model(  # noqa: C901 (ignore complexity)
                 for f in sorted(extra):
                     errors.append(ErrorWrapper(ExtraError(), loc=f))
 
+    # TODO
+    print(f"[validate_model 4] {values=}")
+
     for skip_on_failure, validator in model.__post_root_validators__:
         if skip_on_failure and errors:
             continue
@@ -1118,6 +1131,9 @@ def validate_model(  # noqa: C901 (ignore complexity)
             values = validator(cls_, values)
         except (ValueError, TypeError, AssertionError) as exc:
             errors.append(ErrorWrapper(exc, loc=ROOT_KEY))
+
+    # TODO
+    print(f"[validate_model 5] {values=}")
 
     if errors:
         return values, fields_set, ValidationError(errors, cls_)
