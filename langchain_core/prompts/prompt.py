@@ -52,7 +52,8 @@ class PromptTemplate(StringPromptTemplate):
 
     # TODO
     def __init__(self, **kwargs):
-        print(f"[{self.__class__.__name__} - PromptTemplate.__init__ 1] {kwargs=} {self.input_variables=}")
+        # TODO 此时没有self.input_variables属性
+        print(f"[{self.__class__.__name__} - PromptTemplate.__init__ 1] {kwargs=}")
         super().__init__(**kwargs)
         print(f"[{self.__class__.__name__} - PromptTemplate.__init__ 2] {self.input_variables=}")
 
