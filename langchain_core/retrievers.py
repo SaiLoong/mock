@@ -172,6 +172,10 @@ class BaseRetriever(RunnableSerializable[RetrieverInput, RetrieverOutput], ABC):
     def invoke(
         self, input: str, config: Optional[RunnableConfig] = None, **kwargs: Any
     ) -> List[Document]:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - BaseRetriever.invoke 1] {input=}")
+
         """Invoke the retriever to get relevant documents.
 
         Main entry point for synchronous retriever invocations.
@@ -216,6 +220,10 @@ class BaseRetriever(RunnableSerializable[RetrieverInput, RetrieverOutput], ABC):
                 )
             else:
                 result = self._get_relevant_documents(input, **_kwargs)
+
+            # TODO
+            print(f"[{self.__class__.__name__} - BaseRetriever.invoke 2] {result=}")
+
         except Exception as e:
             run_manager.on_retriever_error(e)
             raise e
