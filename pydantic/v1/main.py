@@ -353,7 +353,8 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
         __pydantic_self__._init_private_attributes()
 
         # TODO
-        print(f"[{__pydantic_self__.__class__.__name__} - BaseModel.__init__ 2] {__pydantic_self__.input_variables=}")
+        if __pydantic_self__.__class__.__name__ == "PromptTemplate":
+            print(f"[{__pydantic_self__.__class__.__name__} - BaseModel.__init__ 2] {__pydantic_self__.input_variables=}")
 
     @no_type_check
     def __setattr__(self, name, value):  # noqa: C901 (ignore complexity)
