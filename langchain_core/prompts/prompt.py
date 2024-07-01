@@ -83,6 +83,10 @@ class PromptTemplate(StringPromptTemplate):
 
     @root_validator(pre=True)
     def pre_init_validation(cls, values: Dict) -> Dict:
+
+        # TODO
+        print(f"[{cls.__class__.__name__} - PromptTemplate.pre_init_validation 1] {values=}")
+
         """Check that template and input variables are consistent."""
         if values.get("template") is None:
             # Will let pydantic fail with a ValidationError if template

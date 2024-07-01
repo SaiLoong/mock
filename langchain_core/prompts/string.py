@@ -213,6 +213,10 @@ def get_template_variables(template: str, template_format: str) -> List[str]:
         input_variables = {
             v for _, v, _, _ in Formatter().parse(template) if v is not None
         }
+
+        # TODO
+        print(f"[get_template_variables] {input_variables=}")
+
     elif template_format == "mustache":
         input_variables = mustache_template_vars(template)
     else:
