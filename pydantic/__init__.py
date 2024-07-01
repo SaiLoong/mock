@@ -1,3 +1,6 @@
+# TODO
+print("mock pydantic==2.7.4")
+
 import typing
 
 from ._migration import getattr_migration

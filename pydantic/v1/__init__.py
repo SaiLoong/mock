@@ -1,3 +1,6 @@
+# TODO
+print("mock pydantic.v1==2.7.4")
+
 # flake8: noqa
 from pydantic.v1 import dataclasses
 from pydantic.v1.annotated_types import create_model_from_namedtuple, create_model_from_typeddict
