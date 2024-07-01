@@ -340,7 +340,10 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
         # TODO
         self = __pydantic_self__
         if self.__class__.__name__ == "PromptTemplate":
-            print(f"[{self.__class__.__name__} - BaseModel.__init__ 1] {self.input_variables=}")
+            if hasattr(self, "input_variables"):
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 1] {self.input_variables=}")
+            else:
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 1] No input_variables")
 
         values, fields_set, validation_error = validate_model(__pydantic_self__.__class__, data)
         if validation_error:
@@ -348,8 +351,10 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
 
         # TODO
         if self.__class__.__name__ == "PromptTemplate":
-            print(f"[{self.__class__.__name__} - BaseModel.__init__ 2] {self.input_variables=} "
-                  f"{values=} {fields_set=} {validation_error=}")
+            if hasattr(self, "input_variables"):
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 2] {self.input_variables=}")
+            else:
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 2] No input_variables")
 
         try:
             object_setattr(__pydantic_self__, '__dict__', values)
@@ -360,19 +365,28 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
 
         # TODO
         if self.__class__.__name__ == "PromptTemplate":
-            print(f"[{self.__class__.__name__} - BaseModel.__init__ 3] {self.input_variables=}")
+            if hasattr(self, "input_variables"):
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 3] {self.input_variables=}")
+            else:
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 3] No input_variables")
 
         object_setattr(__pydantic_self__, '__fields_set__', fields_set)
 
         # TODO
         if self.__class__.__name__ == "PromptTemplate":
-            print(f"[{self.__class__.__name__} - BaseModel.__init__ 4] {self.input_variables=}")
+            if hasattr(self, "input_variables"):
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 4] {self.input_variables=}")
+            else:
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 4] No input_variables")
 
         __pydantic_self__._init_private_attributes()
 
         # TODO
         if self.__class__.__name__ == "PromptTemplate":
-            print(f"[{self.__class__.__name__} - BaseModel.__init__ 5] {self.input_variables=}")
+            if hasattr(self, "input_variables"):
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 5] {self.input_variables=}")
+            else:
+                print(f"[{self.__class__.__name__} - BaseModel.__init__ 5] No input_variables")
 
     @no_type_check
     def __setattr__(self, name, value):  # noqa: C901 (ignore complexity)
