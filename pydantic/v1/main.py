@@ -336,6 +336,10 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
         Raises ValidationError if the input data cannot be parsed to form a valid model.
         """
         # Uses something other than `self` the first arg to allow "self" as a settable attribute
+
+        # TODO
+        print(f"[{__pydantic_self__.__class__.__name__} - BaseModel.__init__ 1] {data=}")
+
         values, fields_set, validation_error = validate_model(__pydantic_self__.__class__, data)
         if validation_error:
             raise validation_error
@@ -347,6 +351,9 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
             ) from e
         object_setattr(__pydantic_self__, '__fields_set__', fields_set)
         __pydantic_self__._init_private_attributes()
+
+        # TODO
+        print(f"[{__pydantic_self__.__class__.__name__} - BaseModel.__init__ 2] {__pydantic_self__.input_variables=}")
 
     @no_type_check
     def __setattr__(self, name, value):  # noqa: C901 (ignore complexity)
