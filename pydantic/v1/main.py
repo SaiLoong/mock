@@ -1048,10 +1048,6 @@ _missing = object()
 def validate_model(  # noqa: C901 (ignore complexity)
     model: Type[BaseModel], input_data: 'DictStrAny', cls: 'ModelOrDc' = None
 ) -> Tuple['DictStrAny', 'SetStr', Optional[ValidationError]]:
-
-    # TODO
-    print(f"[validate_model 1] {input_data=}")
-
     """
     validate data against a model.
     """
@@ -1066,13 +1062,21 @@ def validate_model(  # noqa: C901 (ignore complexity)
     cls_ = cls or model
 
     for validator in model.__pre_root_validators__:
+
+        # TODO
+        print(f"[validate_model 1a] {validator=} {input_data=}")
+
         try:
             input_data = validator(cls_, input_data)
+
+            # TODO
+            print(f"[validate_model 1b] {input_data=}")
+
         except (ValueError, TypeError, AssertionError) as exc:
             return {}, set(), ValidationError([ErrorWrapper(exc, loc=ROOT_KEY)], cls_)
 
     # TODO
-    print(f"[validate_model 2] {values=}\n")
+    print(f"[validate_model 2] {values=} {input_data=}\n")
 
     for name, field in model.__fields__.items():
 
