@@ -1050,7 +1050,7 @@ def validate_model(  # noqa: C901 (ignore complexity)
 ) -> Tuple['DictStrAny', 'SetStr', Optional[ValidationError]]:
 
     # TODO
-    print(f"[validate_model 1] {model=} {input_data=} {cls=}")
+    print(f"[validate_model 1] {input_data=}")
 
     """
     validate data against a model.
@@ -1072,10 +1072,18 @@ def validate_model(  # noqa: C901 (ignore complexity)
             return {}, set(), ValidationError([ErrorWrapper(exc, loc=ROOT_KEY)], cls_)
 
     # TODO
-    print(f"[validate_model 2] {values=}")
+    print(f"[validate_model 2] {values=}\n")
 
     for name, field in model.__fields__.items():
+
+        # TODO
+        print(f"[validate_model 3a] {name=} {field=}")
+
         value = input_data.get(field.alias, _missing)
+
+        # TODO
+        print(f"[validate_model 3b] {value=}")
+
         using_name = False
         if value is _missing and config.allow_population_by_field_name and field.alt_alias:
             value = input_data.get(field.name, _missing)
@@ -1097,6 +1105,10 @@ def validate_model(  # noqa: C901 (ignore complexity)
                 names_used.add(field.name if using_name else field.alias)
 
         v_, errors_ = field.validate(value, values, loc=field.alias, cls=cls_)
+
+        # TODO
+        print(f"[validate_model 3c] {v_=}\n")
+
         if isinstance(errors_, ErrorWrapper):
             errors.append(errors_)
         elif isinstance(errors_, list):
@@ -1105,7 +1117,7 @@ def validate_model(  # noqa: C901 (ignore complexity)
             values[name] = v_
 
     # TODO
-    print(f"[validate_model 3] {values=}")
+    print(f"[validate_model 4] {values=}")
 
     if check_extra:
         if isinstance(input_data, GetterDict):
@@ -1122,7 +1134,7 @@ def validate_model(  # noqa: C901 (ignore complexity)
                     errors.append(ErrorWrapper(ExtraError(), loc=f))
 
     # TODO
-    print(f"[validate_model 4] {values=}")
+    # print(f"[validate_model 4] {values=}")
 
     for skip_on_failure, validator in model.__post_root_validators__:
         if skip_on_failure and errors:
@@ -1133,7 +1145,7 @@ def validate_model(  # noqa: C901 (ignore complexity)
             errors.append(ErrorWrapper(exc, loc=ROOT_KEY))
 
     # TODO
-    print(f"[validate_model 5] {values=}")
+    # print(f"[validate_model 5] {values=}")
 
     if errors:
         return values, fields_set, ValidationError(errors, cls_)
