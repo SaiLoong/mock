@@ -13,8 +13,15 @@ from importlib import metadata
 
 try:
     from pydantic.v1 import *  # noqa: F403
+
+    # TODO
+    print("import pydantic.v1")
+
 except ImportError:
     from pydantic import *  # type: ignore # noqa: F403
+
+    # TODO
+    print("import pydantic")
 
 
 try:
