@@ -3111,6 +3111,10 @@ class RunnableParallel(RunnableSerializable[Input, Dict[str, Any]]):
     def invoke(
         self, input: Input, config: Optional[RunnableConfig] = None
     ) -> Dict[str, Any]:
+
+        # TODO
+        print(f"[{self.__class__.__name__} - RunnableParallel.invoke] {input=}")
+
         from langchain_core.callbacks.manager import CallbackManager
 
         # setup callbacks
@@ -3136,6 +3140,11 @@ class RunnableParallel(RunnableSerializable[Input, Dict[str, Any]]):
         try:
             # copy to avoid issues from the caller mutating the steps during invoke()
             steps = dict(self.steps__)
+
+            # TODO
+            print(f"[{self.__class__.__name__} - RunnableParallel.invoke] {steps=}")
+            print(f"[{self.__class__.__name__} - RunnableParallel.invoke] go to each step.invoke\n")
+
             with get_executor_for_config(config) as executor:
                 futures = [
                     executor.submit(
@@ -4588,6 +4597,7 @@ class RunnableBindingBase(RunnableSerializable[Input, Output]):
 
         # TODO
         print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke] {input=}")
+        print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke] to self.bound.invoke\n")
         # print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke 2] {self.bound=}")
 
         return self.bound.invoke(

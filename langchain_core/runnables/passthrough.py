@@ -452,8 +452,9 @@ class RunnableAssign(RunnableSerializable[Dict[str, Any], Dict[str, Any]]):
         ), "The input to RunnablePassthrough.assign() must be a dict."
 
         # TODO
-        print(f"[{self.__class__.__name__} - RunnableAssign._invoke 1] {input=}")
-        print(f"[{self.__class__.__name__} - RunnableAssign._invoke 2] {type(self.mapper)=} {self.mapper=}")
+        print(f"[{self.__class__.__name__} - RunnableAssign._invoke] {input=}")
+        print(f"[{self.__class__.__name__} - RunnableAssign._invoke] to self.mapper.invoke\n")
+        # print(f"[{self.__class__.__name__} - RunnableAssign._invoke 2] {type(self.mapper)=} {self.mapper=}")
 
         return {
             **input,
