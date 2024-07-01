@@ -50,6 +50,12 @@ class PromptTemplate(StringPromptTemplate):
             prompt = PromptTemplate(template="Say {foo}")
     """
 
+    # TODO
+    def __init__(self, **kwargs):
+        print(f"[{self.__class__.__name__} - PromptTemplate.__init__ 1] {kwargs=} {self.input_variables=}")
+        super().__init__(**kwargs)
+        print(f"[{self.__class__.__name__} - PromptTemplate.__init__ 2] {self.input_variables=}")
+
     @property
     def lc_attributes(self) -> Dict[str, Any]:
         return {
