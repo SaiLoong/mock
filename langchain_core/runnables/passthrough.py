@@ -453,7 +453,7 @@ class RunnableAssign(RunnableSerializable[Dict[str, Any], Dict[str, Any]]):
 
         # TODO
         print(f"[{self.__class__.__name__} - RunnableAssign._invoke 1] {input=}")
-        print(f"[{self.__class__.__name__} - RunnableAssign._invoke 2] {self.mapper=}")
+        print(f"[{self.__class__.__name__} - RunnableAssign._invoke 2] {type(self.mapper)=} {self.mapper=}")
 
         return {
             **input,
