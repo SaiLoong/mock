@@ -4587,8 +4587,8 @@ class RunnableBindingBase(RunnableSerializable[Input, Output]):
     ) -> Output:
 
         # TODO
-        print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke 1] {input=} {config=} {kwargs=}")
-        print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke 2] {self.bound=}")
+        print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke] {input=}")
+        # print(f"[{self.__class__.__name__} - RunnableBindingBase.invoke 2] {self.bound=}")
 
         return self.bound.invoke(
             input,
