@@ -338,23 +338,41 @@ class BaseModel(Representation, metaclass=ModelMetaclass):
         # Uses something other than `self` the first arg to allow "self" as a settable attribute
 
         # TODO
-        print(f"[{__pydantic_self__.__class__.__name__} - BaseModel.__init__ 1] {data=}")
+        self = __pydantic_self__
+        if self.__class__.__name__ == "PromptTemplate":
+            print(f"[{self.__class__.__name__} - BaseModel.__init__ 1] {self.input_variables=}")
 
         values, fields_set, validation_error = validate_model(__pydantic_self__.__class__, data)
         if validation_error:
             raise validation_error
+
+        # TODO
+        if self.__class__.__name__ == "PromptTemplate":
+            print(f"[{self.__class__.__name__} - BaseModel.__init__ 2] {self.input_variables=} "
+                  f"{values=} {fields_set=} {validation_error=}")
+
         try:
             object_setattr(__pydantic_self__, '__dict__', values)
         except TypeError as e:
             raise TypeError(
                 'Model values must be a dict; you may not have returned a dictionary from a root validator'
             ) from e
+
+        # TODO
+        if self.__class__.__name__ == "PromptTemplate":
+            print(f"[{self.__class__.__name__} - BaseModel.__init__ 3] {self.input_variables=}")
+
         object_setattr(__pydantic_self__, '__fields_set__', fields_set)
+
+        # TODO
+        if self.__class__.__name__ == "PromptTemplate":
+            print(f"[{self.__class__.__name__} - BaseModel.__init__ 4] {self.input_variables=}")
+
         __pydantic_self__._init_private_attributes()
 
         # TODO
-        if __pydantic_self__.__class__.__name__ == "PromptTemplate":
-            print(f"[{__pydantic_self__.__class__.__name__} - BaseModel.__init__ 2] {__pydantic_self__.input_variables=}")
+        if self.__class__.__name__ == "PromptTemplate":
+            print(f"[{self.__class__.__name__} - BaseModel.__init__ 5] {self.input_variables=}")
 
     @no_type_check
     def __setattr__(self, name, value):  # noqa: C901 (ignore complexity)
