@@ -548,6 +548,9 @@ class _BaseAutoModelClass:
         # Set the adapter kwargs
         kwargs["adapter_kwargs"] = adapter_kwargs
 
+        # TODO
+        print(f"[{cls.__class__.__name__} - _BaseAutoModelClass.from_pretrained 1] {config=}")
+
         if has_remote_code and trust_remote_code:
             class_ref = config.auto_map[cls.__name__]
             model_class = get_class_from_dynamic_module(
@@ -558,11 +561,19 @@ class _BaseAutoModelClass:
                 model_class.register_for_auto_class(cls.__name__)
             else:
                 cls.register(config.__class__, model_class, exist_ok=True)
+
+            # TODO
+            print(f"[{cls.__class__.__name__} - _BaseAutoModelClass.from_pretrained 2A] {model_class=}")
+
             return model_class.from_pretrained(
                 pretrained_model_name_or_path, *model_args, config=config, **hub_kwargs, **kwargs
             )
         elif type(config) in cls._model_mapping.keys():
             model_class = _get_model_class(config, cls._model_mapping)
+
+            # TODO
+            print(f"[{cls.__class__.__name__} - _BaseAutoModelClass.from_pretrained 2B] {model_class=}")
+
             return model_class.from_pretrained(
                 pretrained_model_name_or_path, *model_args, config=config, **hub_kwargs, **kwargs
             )
