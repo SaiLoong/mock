@@ -7,6 +7,10 @@ import torch.nn as nn
 import transformers
 
 logger = getLogger(__name__)
+
+# TODO
+print(f"use old qlinear_cuda")
+
 try:
     import autogptq_cuda_256
     import autogptq_cuda_64

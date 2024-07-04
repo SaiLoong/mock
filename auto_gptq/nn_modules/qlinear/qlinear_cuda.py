@@ -8,6 +8,9 @@ import transformers
 
 logger = getLogger(__name__)
 
+# TODO
+print(f"use new qlinear_cuda")
+
 try:
     import autogptq_cuda_256
     import autogptq_cuda_64
