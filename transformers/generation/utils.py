@@ -1401,8 +1401,14 @@ class GenerationMixin:
             generation_config.max_length = generation_config.max_new_tokens + input_ids_length
         self._validate_generated_length(generation_config, input_ids_length, has_default_max_length)
 
+        # TODO
+        print(f"[{self.__class__.__name__} - GenerationMixin.generate 1] {generation_config=}")
+
         # 7. determine generation mode
         generation_mode = self._get_generation_mode(generation_config, assistant_model)
+
+        # TODO
+        print(f"[{self.__class__.__name__} - GenerationMixin.generate 2] {generation_mode=}")
 
         if streamer is not None and (generation_config.num_beams > 1):
             raise ValueError(
