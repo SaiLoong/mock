@@ -2887,6 +2887,9 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
         adapter_name = kwargs.pop("adapter_name", "default")
         use_flash_attention_2 = kwargs.pop("use_flash_attention_2", False)
 
+        # TODO
+        print(f"[{cls.__class__.__name__} - PreTrainedModel.from_pretrained 1] {device_map=}")
+
         if is_fsdp_enabled():
             low_cpu_mem_usage = True
 
@@ -2981,11 +2984,17 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
             else:
                 device_map = {"": device_map}
 
+        # TODO
+        print(f"[{cls.__class__.__name__} - PreTrainedModel.from_pretrained 2] {device_map=}")
+
         if device_map is not None:
             if low_cpu_mem_usage is None:
                 low_cpu_mem_usage = True
             elif not low_cpu_mem_usage:
                 raise ValueError("Passing along a `device_map` requires `low_cpu_mem_usage=True`")
+
+        # TODO
+        print(f"[{cls.__class__.__name__} - PreTrainedModel.from_pretrained 3] {device_map=}")
 
         if low_cpu_mem_usage:
             if is_deepspeed_zero3_enabled():
@@ -3108,6 +3117,9 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
             quantization_method_from_config = config.quantization_config.get(
                 "quant_method", QuantizationMethod.BITS_AND_BYTES
             )
+
+        # TODO
+        print(f"[{cls.__class__.__name__} - PreTrainedModel.from_pretrained 3] {quantization_method_from_config=}")
 
         if (
             quantization_method_from_args is not None

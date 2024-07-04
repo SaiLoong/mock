@@ -549,7 +549,7 @@ class _BaseAutoModelClass:
         kwargs["adapter_kwargs"] = adapter_kwargs
 
         # TODO
-        print(f"[{cls.__class__.__name__} - _BaseAutoModelClass.from_pretrained 1] {config=}")
+        # print(f"[{cls.__class__.__name__} - _BaseAutoModelClass.from_pretrained 1] {config=}")
 
         if has_remote_code and trust_remote_code:
             class_ref = config.auto_map[cls.__name__]
