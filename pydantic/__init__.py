@@ -1,5 +1,5 @@
 # TODO
-print("mock pydantic==2.7.4")
+print("mock pydantic==2.8.0")
 
 import typing
 
@@ -48,7 +48,12 @@ if typing.TYPE_CHECKING:
     from .type_adapter import TypeAdapter
     from .types import *
     from .validate_call_decorator import validate_call
-    from .warnings import PydanticDeprecatedSince20, PydanticDeprecatedSince26, PydanticDeprecationWarning
+    from .warnings import (
+        PydanticDeprecatedSince20,
+        PydanticDeprecatedSince26,
+        PydanticDeprecationWarning,
+        PydanticExperimentalWarning,
+    )
 
     # this encourages pycharm to import `ValidationError` from here, not pydantic_core
     ValidationError = pydantic_core.ValidationError
@@ -197,6 +202,7 @@ __all__ = (
     'Tag',
     'Discriminator',
     'JsonValue',
+    'FailFast',
     # type_adapter
     'TypeAdapter',
     # version
@@ -206,6 +212,7 @@ __all__ = (
     'PydanticDeprecatedSince20',
     'PydanticDeprecatedSince26',
     'PydanticDeprecationWarning',
+    'PydanticExperimentalWarning',
     # annotated handlers
     'GetCoreSchemaHandler',
     'GetJsonSchemaHandler',
@@ -351,12 +358,14 @@ _dynamic_imports: 'dict[str, tuple[str, str]]' = {
     'Discriminator': (__spec__.parent, '.types'),
     'JsonValue': (__spec__.parent, '.types'),
     'OnErrorOmit': (__spec__.parent, '.types'),
+    'FailFast': (__spec__.parent, '.types'),
     # type_adapter
     'TypeAdapter': (__spec__.parent, '.type_adapter'),
     # warnings
     'PydanticDeprecatedSince20': (__spec__.parent, '.warnings'),
     'PydanticDeprecatedSince26': (__spec__.parent, '.warnings'),
     'PydanticDeprecationWarning': (__spec__.parent, '.warnings'),
+    'PydanticExperimentalWarning': (__spec__.parent, '.warnings'),
     # annotated handlers
     'GetCoreSchemaHandler': (__spec__.parent, '.annotated_handlers'),
     'GetJsonSchemaHandler': (__spec__.parent, '.annotated_handlers'),
