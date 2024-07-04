@@ -1481,6 +1481,10 @@ class GenerationMixin:
                 **model_kwargs,
             )
         if generation_mode == GenerationMode.GREEDY_SEARCH:
+
+            # TODO
+            print(f"[{self.__class__.__name__} - GenerationMixin.generate 3a] {prepared_logits_processor=}")
+
             # 11. run greedy search
             return self.greedy_search(
                 input_ids,
@@ -1526,6 +1530,10 @@ class GenerationMixin:
                 is_encoder_decoder=self.config.is_encoder_decoder,
                 **model_kwargs,
             )
+
+            # TODO
+            print(f"[{self.__class__.__name__} - GenerationMixin.generate 3b] {prepared_logits_processor=}")
+            print(f"[{self.__class__.__name__} - GenerationMixin.generate 3b] {logits_warper=}")
 
             # 13. run sample
             return self.sample(
@@ -2285,6 +2293,10 @@ class GenerationMixin:
         ```"""
         # init values
         logits_processor = logits_processor if logits_processor is not None else LogitsProcessorList()
+
+        # TODO
+        print(f"[{self.__class__.__name__} - GenerationMixin.greedy_search] {logits_processor=}")
+
         stopping_criteria = stopping_criteria if stopping_criteria is not None else StoppingCriteriaList()
         if max_length is not None:
             warnings.warn(
@@ -2574,6 +2586,10 @@ class GenerationMixin:
             )
             stopping_criteria = validate_stopping_criteria(stopping_criteria, max_length)
         logits_warper = logits_warper if logits_warper is not None else LogitsProcessorList()
+
+        # TODO
+        print(f"[{self.__class__.__name__} - GenerationMixin.sample] {logits_processor=} {logits_warper=}")
+
         pad_token_id = pad_token_id if pad_token_id is not None else self.generation_config.pad_token_id
         eos_token_id = eos_token_id if eos_token_id is not None else self.generation_config.eos_token_id
         if isinstance(eos_token_id, int):
