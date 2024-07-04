@@ -25,6 +25,9 @@ try:
 except:
     EXLLAMA_KERNELS_AVAILABLE = False
 
+# TODO
+print(f"{EXLLAMA_KERNELS_AVAILABLE=} {AUTOGPTQ_CUDA_AVAILABLE=}")
+
 logger = getLogger(__name__)
 
 
