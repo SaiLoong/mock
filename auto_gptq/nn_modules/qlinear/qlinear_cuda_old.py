@@ -21,6 +21,9 @@ except ImportError:
     autogptq_cuda_64 = None
     _autogptq_cuda_available = False
 
+# TODO
+print(f"{autogptq_cuda_256=} {autogptq_cuda_64=} {_autogptq_cuda_available=}")
+
 
 class QuantLinear(nn.Module):
     QUANT_TYPE = "cuda-old"
