@@ -1,3 +1,6 @@
+# TODO
+print("mock auto-gptq==0.4.2")
+
 __version__ = "0.4.2"
 from .modeling import BaseQuantizeConfig
 from .modeling import AutoGPTQForCausalLM
