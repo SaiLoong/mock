@@ -1,5 +1,5 @@
 # TODO
-print("mock langchain-core==0.2.10")
+print("mock langchain-core==0.2.11")
 
 from importlib import metadata
 
