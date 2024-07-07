@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+# TODO
+print("mock pandas==2.2.2")
+
 import os
 import warnings
 

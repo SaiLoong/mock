@@ -1,3 +1,6 @@
+# TODO
+print("mock scikit-learn==1.5.1")
+
 """Configure global settings and get information about the working environment."""
 
 # Machine learning module for Python
