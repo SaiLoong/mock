@@ -2631,9 +2631,20 @@ class GenerationMixin:
 
             next_token_logits = outputs.logits[:, -1, :]
 
+            # TODO
+            print(f"[{self.__class__.__name__} - GenerationMixin.sample 0] {logits_processor=} {logits_warper=}\n\n")
+            print(f"[{self.__class__.__name__} - GenerationMixin.sample 1] {next_token_logits=}\n\n")
+
             # pre-process distribution
             next_token_scores = logits_processor(input_ids, next_token_logits)
+
+            # TODO
+            print(f"[{self.__class__.__name__} - GenerationMixin.sample 2] {next_token_scores=}\n\n")
+
             next_token_scores = logits_warper(input_ids, next_token_scores)
+
+            # TODO
+            print(f"[{self.__class__.__name__} - GenerationMixin.sample 3] {next_token_scores=}\n\n")
 
             # Store scores, attentions and hidden_states when required
             if return_dict_in_generate:
@@ -2655,7 +2666,14 @@ class GenerationMixin:
 
             # sample
             probs = nn.functional.softmax(next_token_scores, dim=-1)
+
+            # TODO
+            print(f"[{self.__class__.__name__} - GenerationMixin.sample 4] {probs=}\n\n")
+
             next_tokens = torch.multinomial(probs, num_samples=1).squeeze(1)
+
+            # TODO
+            print(f"[{self.__class__.__name__} - GenerationMixin.sample 5] {next_tokens=}\n\n")
 
             # finished sentences should have their next token be a padding token
             if eos_token_id is not None:
