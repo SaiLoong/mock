@@ -10,5 +10,6 @@ pandas==2.2.2
 pydantic==2.8.0
 sentence-transformers==3.0.1
 scikit-learn==1.5.1
+tokenizers==0.15.2
 transformers==4.37.2
 unstructured==0.14.9
