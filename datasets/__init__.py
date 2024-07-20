@@ -1,3 +1,6 @@
+# TODO
+print("mock datasets==2.18.0")
+
 # ruff: noqa
 # Copyright 2020 The HuggingFace Datasets Authors and the TensorFlow Datasets Authors.
 #
