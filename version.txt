@@ -3,6 +3,7 @@ auto-gptq==0.4.2
 chromadb==0.5.3
 datasets==2.18.0
 deepspeed==0.14.4
+huggingface-hub==0.23.4
 langchain==0.2.6
 langchain-community==0.2.6
 langchain-core==0.2.11
