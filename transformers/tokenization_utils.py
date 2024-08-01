@@ -618,9 +618,17 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         verbose: bool = True,
         **kwargs,
     ) -> BatchEncoding:
+
+        # TODO
+        print(f"[PreTrainedTokenizer._encode_plus 1] {text=}")
+
         def get_input_ids(text):
             if isinstance(text, str):
                 tokens = self.tokenize(text, **kwargs)
+
+                # TODO
+                print(f"[PreTrainedTokenizer._encode_plus.get_input_ids 2] {tokens=}")
+
                 return self.convert_tokens_to_ids(tokens)
             elif isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], str):
                 if is_split_into_words:
@@ -654,6 +662,10 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
             )
 
         first_ids = get_input_ids(text)
+
+        # TODO
+        print(f"[PreTrainedTokenizer._encode_plus 3] {first_ids=}")
+
         second_ids = get_input_ids(text_pair) if text_pair is not None else None
 
         return self.prepare_for_model(
