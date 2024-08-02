@@ -2732,7 +2732,12 @@ class GenerationMixin:
             # TODO
             print(f"\n\n[GenerationMixin.sample 1]")
             for k, v in model_inputs.items():
-                if isinstance(v, torch.Tensor):
+                if k == "past_key_values":
+                    if v is None:
+                        print(f"{k} is None")
+                    else:
+                        print(f"{k}: {len(v)=} {len(v[0])=} {v[0][0].shape=}")
+                elif isinstance(v, torch.Tensor):
                     print(f"{k}: {v.shape=}")
                 else:
                     print(f"{k}: {v=}")
