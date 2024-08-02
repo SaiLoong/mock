@@ -2738,6 +2738,9 @@ class GenerationMixin:
                 if this_peer_finished_flag.item() == 0.0:
                     break
 
+            # TODO
+            print(f"\n\n[GenerationMixin.sample 1] {input_ids.shape=}")
+
             # prepare model inputs
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
 
@@ -2747,7 +2750,7 @@ class GenerationMixin:
                 1 / 0
 
             # TODO
-            print(f"\n\n[GenerationMixin.sample 1]")
+            print(f"\n\n[GenerationMixin.sample 2]")
             for k, v in model_inputs.items():
                 if k == "past_key_values":
                     if v is None:
@@ -2808,6 +2811,10 @@ class GenerationMixin:
 
             # update generated ids, model inputs, and length for next step
             input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
+
+            # TODO
+            print(f"\n\n[GenerationMixin.sample 3] {input_ids.shape=}")
+
             if streamer is not None:
                 streamer.put(next_tokens.cpu())
             model_kwargs = self._update_model_kwargs_for_generation(
