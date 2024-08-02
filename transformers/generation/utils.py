@@ -2706,6 +2706,10 @@ class GenerationMixin:
 
         this_peer_finished = False  # used by synced_gpus only
         # auto-regressive generation
+
+        # TODO
+        i = 0
+
         while True:
             if synced_gpus:
                 # Under synced_gpus the `forward` call must continue until all gpus complete their sequence.
@@ -2727,6 +2731,11 @@ class GenerationMixin:
                     print(f"{k}: {v.shape=}")
                 else:
                     print(f"{k}: {v=}")
+
+            # TODO
+            i += 1
+            if i >= 4:
+                1 / 0
 
             # forward pass to get next token
             outputs = self(
