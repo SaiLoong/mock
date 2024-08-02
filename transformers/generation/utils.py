@@ -2725,17 +2725,22 @@ class GenerationMixin:
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
 
             # TODO
+            i += 1
+            if i >= 4:
+                1 / 0
+
+            # TODO
             print(f"\n\n[GenerationMixin.sample 1]")
             for k, v in model_inputs.items():
                 if isinstance(v, torch.Tensor):
                     print(f"{k}: {v.shape=}")
                 else:
                     print(f"{k}: {v=}")
-
-            # TODO
-            i += 1
-            if i >= 4:
-                1 / 0
+            if i == 1:
+                position_ids = model_inputs["position_ids"]
+                print(f"{position_ids[:5]=} {position_ids[-5:]=}")
+                attention_mask = model_inputs["attention_mask"]
+                print(f"{attention_mask[:5]=} {attention_mask[-5:]=}")
 
             # forward pass to get next token
             outputs = self(
