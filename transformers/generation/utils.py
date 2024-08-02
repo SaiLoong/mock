@@ -1456,15 +1456,23 @@ class GenerationMixin:
 
         # TODO
         print(f'[GenerationMixin.generate 1] {self.config.is_encoder_decoder=} {model_input_name=} '
-              f'{model_kwargs.get("use_cache", 123456)=}')
+              f'{model_kwargs.get("use_cache", 123456)=} {generation_config.use_cache=}')
 
         if not self.config.is_encoder_decoder and model_input_name == "inputs_embeds":
+
+            # TODO
+            print(f'[GenerationMixin.generate 2a]')
+
             model_kwargs["use_cache"] = True
         else:
+
+            # TODO
+            print(f'[GenerationMixin.generate 2b]')
+
             model_kwargs["use_cache"] = generation_config.use_cache
 
         # TODO
-        print(f'[GenerationMixin.generate 2] {model_kwargs.get("use_cache", 123456)=}')
+        print(f'[GenerationMixin.generate 3] {model_kwargs.get("use_cache", 123456)=}')
 
         accepts_attention_mask = "attention_mask" in set(inspect.signature(self.forward).parameters.keys())
         requires_attention_mask = "encoder_outputs" not in model_kwargs
