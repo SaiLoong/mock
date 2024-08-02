@@ -2709,6 +2709,7 @@ class GenerationMixin:
 
         # TODO
         i = 0
+        print(f'[GenerationMixin.sample 0] {model_kwargs.get("use_cache", 123456)=}')
 
         while True:
             if synced_gpus:
