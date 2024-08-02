@@ -2741,9 +2741,8 @@ class GenerationMixin:
                     print(f"{k}: {v.shape=}")
                 else:
                     print(f"{k}: {v=}")
-            if i == 1:
-                print(f'{model_inputs["position_ids"]=}')
-                print(f'{model_inputs["attention_mask"]=}')
+            print(f'{model_inputs["position_ids"]=}')
+            print(f'{model_inputs["attention_mask"]=}')
 
             # forward pass to get next token
             outputs = self(
