@@ -2721,8 +2721,12 @@ class GenerationMixin:
             model_inputs = self.prepare_inputs_for_generation(input_ids, **model_kwargs)
 
             # TODO
-            print(f"[GenerationMixin.sample 1] {model_inputs=}")
-
+            print(f"\n\n[GenerationMixin.sample 1]")
+            for k, v in model_inputs.items():
+                if isinstance(v, torch.Tensor):
+                    print(f"{k}: {v.shape=}")
+                else:
+                    print(f"{k}: {v=}")
 
             # forward pass to get next token
             outputs = self(
