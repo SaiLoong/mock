@@ -1777,6 +1777,9 @@ class Trainer:
         self._globalstep_last_logged = self.state.global_step
         model.zero_grad()
 
+        # TODO
+        print(f"[Trainer._inner_training_loop 1] {model.device=}")
+
         self.control = self.callback_handler.on_train_begin(args, self.state, self.control)
 
         # Skip the first epochs_trained epochs to get the random state of the dataloader at the right point.
@@ -1832,6 +1835,9 @@ class Trainer:
 
                 if step % args.gradient_accumulation_steps == 0:
                     self.control = self.callback_handler.on_step_begin(args, self.state, self.control)
+
+                # TODO
+                print(f"[Trainer._inner_training_loop 2] {model.device=}")
 
                 with self.accelerator.accumulate(model):
                     tr_loss_step = self.training_step(model, inputs)
