@@ -1,1 +1,2 @@
+denoising-diffusion-pytorch==2.0.16
 transformers==4.32.0
