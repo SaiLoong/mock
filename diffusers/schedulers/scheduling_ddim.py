@@ -441,6 +441,15 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
             # the pred_epsilon is always re-derived from the clipped x_0 in Glide
             pred_epsilon = (sample - alpha_prod_t ** (0.5) * pred_original_sample) / beta_prod_t ** (0.5)
 
+        # TODO
+        if timestep.item() <= 1:
+            print(f"\n\n[{timestep=}]")
+            print(f"{eta=}")
+            print(f"{alpha_prod_t_prev=} {alpha_prod_t_prev.item()=}")
+            print(f"{std_dev_t=} {std_dev_t.item()=}")
+            s = 1 - alpha_prod_t_prev - std_dev_t**2
+            print(f"{s=} {s.item()=}")
+
         # 6. compute "direction pointing to x_t" of formula (12) from https://arxiv.org/pdf/2010.02502.pdf
         pred_sample_direction = (1 - alpha_prod_t_prev - std_dev_t**2) ** (0.5) * pred_epsilon
 
