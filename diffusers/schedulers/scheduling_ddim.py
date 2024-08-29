@@ -444,7 +444,9 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         # TODO
         if timestep.item() <= 1:
             print(f"\n\n[{timestep=}]")
+            print(f"{self.final_alpha_cumprod=} {self.final_alpha_cumprod.item()=}")
             print(f"{eta=}")
+            print(f"{variance=} {variance.item()}")
             print(f"{alpha_prod_t_prev=} {alpha_prod_t_prev.item()=}")
             print(f"{std_dev_t=} {std_dev_t.item()=}")
             s = 1 - alpha_prod_t_prev - std_dev_t**2
