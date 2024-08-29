@@ -408,7 +408,7 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         sample: torch.Tensor,
         generator=None,
         return_dict: bool = True,
-        noise_level = 1.
+        eta = 1.
     ) -> Union[DDPMSchedulerOutput, Tuple]:
         """
         Predict the sample from the previous timestep by reversing the SDE. This function propagates the diffusion
@@ -473,8 +473,17 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
 
         # 4. Compute coefficients for pred_original_sample x_0 and current sample x_t
         # See formula (7) from https://arxiv.org/pdf/2006.11239.pdf
-        pred_original_sample_coeff = (alpha_prod_t_prev ** (0.5) * current_beta_t) / beta_prod_t
-        current_sample_coeff = current_alpha_t ** (0.5) * beta_prod_t_prev / beta_prod_t
+        # pred_original_sample_coeff = (alpha_prod_t_prev ** (0.5) * current_beta_t) / beta_prod_t
+        # current_sample_coeff = current_alpha_t ** (0.5) * beta_prod_t_prev / beta_prod_t
+
+        # TODO ing
+        raw_variance = self._get_variance(t, predicted_variance=predicted_variance)
+        sigma = eta * raw_variance ** 0.5
+        c1 = (1 - alpha_prod_t_prev - sigma**2) ** 0.5
+        c2 = beta_prod_t ** 0.5
+
+        pred_original_sample_coeff = alpha_prod_t_prev ** 0.5 - c1 / c2 * alpha_prod_t ** 0.5
+        current_sample_coeff = c1 / c2
 
         # 5. Compute predicted previous sample µ_t
         # See formula (7) from https://arxiv.org/pdf/2006.11239.pdf
@@ -499,9 +508,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
 
                 # TODO
                 # print(f"[C] {predicted_variance=}")
-                variance = self._get_variance(t, predicted_variance=predicted_variance)
+                # variance = self._get_variance(t, predicted_variance=predicted_variance)
                 # print(f"[C] {variance=}")
-                noise_coeff = (variance ** 0.5) * noise_level
+                noise_coeff = sigma
 
                 variance = noise_coeff * variance_noise
 
