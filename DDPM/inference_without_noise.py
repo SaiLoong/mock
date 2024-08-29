@@ -90,9 +90,11 @@ model_path = "/mnt/workspace/ddpm-ema-celebahq-256"
 unet = UNet2DModel.from_pretrained(model_path).cuda()
 scheduler = DDPMScheduler.from_pretrained(model_path)
 
+generator = torch.Generator("cuda").manual_seed(1024)
+
 sample = torch.randn(
     1, unet.config.in_channels, unet.config.sample_size, unet.config.sample_size,
-    device="cuda"
+    device="cuda", generator=generator
 )
 
 outputs = dict()
@@ -100,11 +102,35 @@ for t in tqdm(scheduler.timesteps):
     with torch.no_grad():
         pred_noise = unet(sample, t).sample
 
-    output = scheduler.step(pred_noise, t, sample)
+    output = scheduler.step(pred_noise, t, sample, generator=generator)
     sample = output.prev_sample
     outputs[t.item()] = output
 
 plot_denoise_progress(outputs, show=11)
+
+# =============================================================================================
+
+
+# 重写系数的代码
+"""
+current_sample_coeff: Optional[torch.Tensor] = None
+pred_original_sample_coeff: Optional[torch.Tensor] = None
+noise_coeff: Optional[torch.Tensor] = None
+
+
+# self._get_variance里面的clamp记得屏蔽
+
+raw_variance = self._get_variance(t, predicted_variance=predicted_variance)
+sigma = eta * raw_variance ** 0.5
+c1 = (1 - alpha_prod_t_prev - sigma**2) ** 0.5
+c2 = beta_prod_t ** 0.5
+
+pred_original_sample_coeff = alpha_prod_t_prev ** 0.5 - c1 / c2 * alpha_prod_t ** 0.5
+current_sample_coeff = c1 / c2
+
+noise_coeff = sigma
+variance = noise_coeff * variance_noise
+"""
 
 # =============================================================================================
 
