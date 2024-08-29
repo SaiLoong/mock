@@ -480,6 +480,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         # See formula (7) from https://arxiv.org/pdf/2006.11239.pdf
         pred_prev_sample = pred_original_sample_coeff * pred_original_sample + current_sample_coeff * sample
 
+        # TODO
+        noise_coeff = None
+
         # 6. Add noise
         variance = 0
         if t > 0:
@@ -495,9 +498,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
             else:
 
                 # TODO
-                print(f"[C] {predicted_variance=}")
+                # print(f"[C] {predicted_variance=}")
                 variance = self._get_variance(t, predicted_variance=predicted_variance)
-                print(f"[C] {variance=}")
+                # print(f"[C] {variance=}")
                 noise_coeff = (variance ** 0.5) * noise_level
 
                 variance = noise_coeff * variance_noise
