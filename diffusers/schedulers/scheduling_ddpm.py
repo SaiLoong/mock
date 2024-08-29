@@ -44,6 +44,11 @@ class DDPMSchedulerOutput(BaseOutput):
     prev_sample: torch.Tensor
     pred_original_sample: Optional[torch.Tensor] = None
 
+    # TODO
+    current_sample_coeff: Optional[torch.Tensor] = None
+    pred_original_sample_coeff: Optional[torch.Tensor] = None
+    noise_coeff: Optional[torch.Tensor] = None
+
 
 def betas_for_alpha_bar(
     num_diffusion_timesteps,
@@ -403,6 +408,7 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         sample: torch.Tensor,
         generator=None,
         return_dict: bool = True,
+        noise_level = 1.
     ) -> Union[DDPMSchedulerOutput, Tuple]:
         """
         Predict the sample from the previous timestep by reversing the SDE. This function propagates the diffusion
@@ -487,14 +493,25 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
                 variance = self._get_variance(t, predicted_variance=predicted_variance)
                 variance = torch.exp(0.5 * variance) * variance_noise
             else:
-                variance = (self._get_variance(t, predicted_variance=predicted_variance) ** 0.5) * variance_noise
+
+                # TODO
+                print(f"[C] {predicted_variance=}")
+                variance = self._get_variance(t, predicted_variance=predicted_variance)
+                print(f"[C] {variance=}")
+                noise_coeff = (variance ** 0.5) * noise_level
+
+                variance = noise_coeff * variance_noise
 
         pred_prev_sample = pred_prev_sample + variance
 
         if not return_dict:
             return (pred_prev_sample,)
 
-        return DDPMSchedulerOutput(prev_sample=pred_prev_sample, pred_original_sample=pred_original_sample)
+        return DDPMSchedulerOutput(prev_sample=pred_prev_sample, pred_original_sample=pred_original_sample,
+                                   current_sample_coeff=current_sample_coeff,
+                                   pred_original_sample_coeff=pred_original_sample_coeff,
+                                   noise_coeff=noise_coeff
+                                   )
 
     def add_noise(
         self,
