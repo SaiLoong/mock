@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-# @file ddim.py
+# @file interpolation.py
 # @author zhangshilong
 # @date 2024/8/29
 
 import math
 
 import matplotlib.pyplot as plt
-import numpy as np
 import torch
 from matplotlib.axes import Axes
 from PIL import Image
@@ -54,33 +53,6 @@ def plot_images(images, n_rows=None, n_cols=None, suptitle=None, titles=None, sc
     plt.show()
 
 
-def plot_denoise_progress(scheduler_outputs, show=6):
-    indices = np.linspace(0, len(scheduler_outputs) - 1, show, dtype=int)
-    timestamps = np.array(sorted(scheduler_outputs.keys(), reverse=True))[indices]
-
-    # current_sample_coeff、pred_original_sample_coeff、noise_coeff属性都是修改源码添加的
-    tuples = [
-        ("生成图片", "prev_sample", "current_sample_coeff"),
-        ("预测原图", "pred_original_sample", "pred_original_sample_coeff")]
-
-    for suptitle, image_key, coeff_key in tuples:
-        images = torch.stack([scheduler_outputs[t][image_key] for t in timestamps])
-        images = images.permute(1, 0, 2, 3, 4).reshape(-1, *images.shape[-3:])
-
-        titles = list()
-        for t in timestamps:
-            title = f"{t=}"
-            if (coeff := scheduler_outputs[t].get(coeff_key)) is not None:
-                title += f"\n{coeff=:.2f}"
-
-            if (noise_coeff := scheduler_outputs[t].get("noise_coeff")) is not None:
-                title += f"\n{noise_coeff=:.2f}"
-
-            titles.append(title)
-        titles += [None] * (len(images) - show)
-        plot_images(images, n_cols=show, suptitle=suptitle, titles=titles)
-
-
 # =============================================================================================
 
 
@@ -96,26 +68,53 @@ scheduler = DDIMScheduler.from_pretrained(model_path)
 generator = torch.Generator("cuda").manual_seed(1024)
 
 
+def gen_sample(batch_size=1):
+    return torch.randn(
+        batch_size, unet.config.in_channels, unet.config.sample_size, unet.config.sample_size,
+        device="cuda", dtype=dtype, generator=generator
+    )
+
+
 def step(sample, eta=0.0, num_inference_steps=50):
     scheduler.set_timesteps(num_inference_steps)
 
-    outputs = dict()
     for t in tqdm(scheduler.timesteps):
         with torch.no_grad():
             pred_noise = unet(sample, t).sample
 
-        output = scheduler.step(pred_noise, t, sample, eta=eta, generator=generator)
-        sample = output.prev_sample
-        outputs[t.item()] = output
+        sample = scheduler.step(pred_noise, t, sample, eta=eta, generator=generator).prev_sample
 
-    return outputs
+    return sample
 
 
-sample = torch.randn(
-    2, unet.config.in_channels, unet.config.sample_size, unet.config.sample_size,
-    device="cuda", dtype=dtype, generator=generator
-)
+def linear_interpolation(img1, img2, lambdas):
+    # (B, 1, 1, 1)
+    lambdas = torch.tensor(lambdas, device="cuda", dtype=dtype).reshape(-1, 1, 1, 1)
 
-# eta须<=1
-outputs = step(sample, eta=0, num_inference_steps=50)
-plot_denoise_progress(outputs, show=11)
+    # (B, C, H, W)
+    return lambdas * img1 + (1 - lambdas) * img2
+
+
+def spherical_interpolation(img1, img2, lambdas):
+    # (B, 1, 1, 1)
+    lambdas = torch.tensor(lambdas, device="cuda", dtype=dtype).reshape(-1, 1, 1, 1)
+
+    # (B, C, H, W)
+    return torch.sin(lambdas * torch.pi / 2) * img1 + torch.cos(lambdas * torch.pi / 2) * img2
+
+
+latent1 = gen_sample()
+latent2 = gen_sample()
+lambdas = [0.9, 0.7, 0.5, 0.3, 0.1]
+
+tuples = [
+    ("线性插值", linear_interpolation),
+    ("球面插值", spherical_interpolation)
+]
+for suptitle, interpolation_func in tuples:
+    fused_latents = interpolation_func(latent1, latent2, lambdas)
+    latents = torch.concat([latent1, fused_latents, latent2])
+    images = step(latents)
+
+    titles = ["image1"] + [f"lamda={lamb}" for lamb in lambdas] + ["image2"]
+    plot_images(images, n_rows=1, suptitle=suptitle, titles=titles)

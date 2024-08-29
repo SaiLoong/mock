@@ -86,7 +86,6 @@ def plot_denoise_progress(scheduler_outputs, show=6):
 # =============================================================================================
 
 
-# model_path = "/mnt/workspace/ddpm-ema-church-256"
 model_path = "/mnt/workspace/ddpm-ema-celebahq-256"
 unet = UNet2DModel.from_pretrained(model_path).cuda()
 scheduler = DDPMScheduler.from_pretrained(model_path)
