@@ -8,7 +8,7 @@ import torch
 from diffusers import StableDiffusionXLPipeline
 
 # Pipeline可以直接使用DiffusionPipeline，明确写更方便进入源码
-base_path = "/mnt/workspace/stable-diffusion-xl-base-1.0"
+base_path = "/mnt/workspace/model/stable-diffusion-xl-base-1.0"
 pipe = StableDiffusionXLPipeline.from_pretrained(
     base_path,
     torch_dtype=torch.float16, variant="fp16",

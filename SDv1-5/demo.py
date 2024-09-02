@@ -7,11 +7,11 @@ import torch
 
 from diffusers import StableDiffusionPipeline
 
-# vae_path = "/mnt/workspace/sd-vae-ft-mse"
+# vae_path = "/mnt/workspace/model/sd-vae-ft-mse"
 # vae = AutoencoderKL.from_pretrained(vae_path,
 #                                     torch_dtype=torch.float16, device_map="auto")
 
-model_path = "/mnt/workspace/stable-diffusion-v1-5"
+model_path = "/mnt/workspace/model/stable-diffusion-v1-5"
 pipe = StableDiffusionPipeline.from_pretrained(model_path,
                                                # vae=vae,
                                                torch_dtype=torch.float16, device_map="balanced")
