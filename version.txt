@@ -1,4 +1,6 @@
 accelerate==0.33.0
 denoising-diffusion-pytorch==2.0.16
 diffusers==0.30.0
+huggingface-hub==0.24.6
+peft==0.12.0
 transformers==4.44.2
