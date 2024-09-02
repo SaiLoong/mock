@@ -10,7 +10,7 @@ accelerate launch train_text_to_image_lora_sdxl.py \
   --dataset_name=$DATASET_PATH \
   --validation_prompt="a black and yellow dragon flying to the moon" \
   --num_validation_images=4 \
-  --validation_epochs 1 \
+  --validation_epochs=4 \
   --output_dir=$OUTPUT_PATH \
   --seed=1024 \
   --resolution=1024 \
