@@ -1,3 +1,5 @@
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"  # 据说能更好地会收显存碎片
+
 MODEL_PATH="/mnt/workspace/model/stable-diffusion-xl-base-1.0"
 VAE_PATH="/mnt/workspace/model/sdxl-vae-fp16-fix"
 DATASET_PATH="/mnt/workspace/dataset/pokemon-blip-captions"
