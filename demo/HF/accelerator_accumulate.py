@@ -77,6 +77,7 @@ loss_func = nn.MSELoss()
 for idx, (x, y) in enumerate(dataloader):
     # context通过控制accelerator.sync_gradients属性来控制optimizer是否更新参数和清理梯度
     # 即每4个substep中，前3个sync_gradients=False，只有最后一个是True
+    # 特别地，最后一个substep一定sync_gradients=True
     # TODO 个人测试不加model好像没啥不同，可能在分布式训练才会有区别，先跟风写上
     with accelerator.accumulate(model):
         y_pred = model(x)
