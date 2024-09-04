@@ -389,6 +389,10 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--lr_warmup_steps", type=int, default=500, help="Number of steps for the warmup in the lr scheduler."
     )
+    # FIX: 原本没这个参数，默认为1时cosine_with_restarts和cosine完全相同。一般这个值都是整数，但泛化为小数能控制lr结束值不为0
+    parser.add_argument(
+        "--lr_num_cycles", type=float, default=1., help="The number of hard restarts used in `COSINE_WITH_RESTARTS` scheduler."
+    )
     parser.add_argument(
         "--snr_gamma",
         type=float,
@@ -480,7 +484,7 @@ def parse_args(input_args=None):
     parser.add_argument(
         "--debug_loss",
         action="store_true",
-        help="debug loss for each image, if filenames are awailable in the dataset",
+        help="debug loss for each image, if filenames are available in the dataset",
     )
 
     if input_args is not None:
@@ -638,7 +642,7 @@ def main(args):
         vae_path,
         subfolder="vae" if args.pretrained_vae_model_name_or_path is None else None,
         revision=args.revision,
-        # FIX
+        # BUGFIX: 外部的VAE直接用主版本
         variant=args.variant if args.pretrained_vae_model_name_or_path is None else None,
     )
     unet = UNet2DConditionModel.from_pretrained(
@@ -1008,8 +1012,11 @@ def main(args):
     lr_scheduler = get_scheduler(
         args.lr_scheduler,
         optimizer=optimizer,
-        num_warmup_steps=args.lr_warmup_steps * args.gradient_accumulation_steps,
-        num_training_steps=args.max_train_steps * args.gradient_accumulation_steps,
+        # BUGFIX: lr只会在optimizer更新后才更新，因此不用乘args.gradient_accumulation_steps
+        num_warmup_steps=args.lr_warmup_steps,
+        num_training_steps=args.max_train_steps,
+        # FIX: num_cycles不为1时，cosine_with_restarts才会区别于cosine
+        num_cycles=args.lr_num_cycles
     )
 
     # Prepare everything with our `accelerator`.
@@ -1286,24 +1293,27 @@ def main(args):
         del text_encoder_2_lora_layers
         torch.cuda.empty_cache()
 
-        # Final inference
-        # Make sure vae.dtype is consistent with the unet.dtype
-        if args.mixed_precision == "fp16":
-            vae.to(weight_dtype)
-        # Load previous pipeline
-        pipeline = StableDiffusionXLPipeline.from_pretrained(
-            args.pretrained_model_name_or_path,
-            vae=vae,
-            revision=args.revision,
-            variant=args.variant,
-            torch_dtype=weight_dtype,
-        )
-
-        # load attention processors
-        pipeline.load_lora_weights(args.output_dir)
-
         # run inference
         if args.validation_prompt and args.num_validation_images > 0:
+            # FIX: pipeline的唯一作用就是预测，应该放在这里
+
+            # Final inference
+            # Make sure vae.dtype is consistent with the unet.dtype
+            if args.mixed_precision == "fp16":
+                vae.to(weight_dtype)
+
+            # Load previous pipeline
+            pipeline = StableDiffusionXLPipeline.from_pretrained(
+                args.pretrained_model_name_or_path,
+                vae=vae,
+                revision=args.revision,
+                variant=args.variant,
+                torch_dtype=weight_dtype,
+            )
+
+            # load attention processors
+            pipeline.load_lora_weights(args.output_dir)
+
             images = log_validation(pipeline, args, accelerator, epoch, is_final_validation=True)
 
         if args.push_to_hub:
@@ -1328,6 +1338,8 @@ def main(args):
 
 if __name__ == "__main__":
     args = parse_args()
+
+    # FIX
     print(f"\n[====================INFO====================]")
     for k, v in args.__dict__.items():
         print(f"{k}={v!r}")
