@@ -1,22 +1,24 @@
-export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"  # 据说能更好地会收显存碎片
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"  # 据说能更好地回收显存碎片
 
 MODEL_PATH="/mnt/workspace/model/stable-diffusion-xl-base-1.0"
 VAE_PATH="/mnt/workspace/model/sdxl-vae-fp16-fix"
-DATASET_PATH="/mnt/workspace/dataset/pokemon-blip-captions"
-OUTPUT_PATH="/mnt/workspace/LoRA_model/sdxl-pokemon"
+DATASET_PATH="/mnt/workspace/dataset/beauty"
+OUTPUT_PATH="/mnt/workspace/LoRA_model/sdxl-beauty"
 
+PROMPT="A photo of a young woman with medium-length wavy hair, seated with one leg extended and the other bent, hand resting on her thigh. She faces the camera, wearing a white strapless crop top and light blue distressed jeans, paired with white sneakers. She gazes directly at the viewer with a composed expression."
+
+# TODO 待尝试其它lr_scheduler、--snr_gamma=5
 accelerate launch train_text_to_image_lora_sdxl.py \
   --pretrained_model_name_or_path=$MODEL_PATH \
   --pretrained_vae_model_name_or_path=$VAE_PATH \
   --variant="fp16" \
-  --dataset_name=$DATASET_PATH \
-  --validation_prompt="a black and yellow dragon flying to the moon" \
+  --train_data_dir=$DATASET_PATH \
+  --validation_prompt="$PROMPT" \
   --num_validation_images=4 \
-  --validation_epochs=4 \
+  --validation_epochs=10 \
   --output_dir=$OUTPUT_PATH \
   --seed=1024 \
   --resolution=1024 \
-  --center_crop \
   --random_flip \
   --train_batch_size=1 \
   --max_train_steps=15000 \
@@ -29,4 +31,5 @@ accelerate launch train_text_to_image_lora_sdxl.py \
   --dataloader_num_workers=8 \
   --max_grad_norm=1 \
   --mixed_precision="fp16" \
-  --report_to="wandb"
+  --report_to="wandb" \
+  --debug_loss

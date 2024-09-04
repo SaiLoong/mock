@@ -1200,7 +1200,8 @@ def main(args):
             if accelerator.sync_gradients:
                 progress_bar.update(1)
                 global_step += 1
-                accelerator.log({"train_loss": train_loss}, step=global_step)
+                lr = lr_scheduler.get_last_lr()[0]
+                accelerator.log({"train_loss": train_loss, "lr": lr}, step=global_step)
                 train_loss = 0.0
 
                 # DeepSpeed requires saving weights on every device; saving weights only on the main process would cause issues.
@@ -1327,4 +1328,9 @@ def main(args):
 
 if __name__ == "__main__":
     args = parse_args()
+    print(f"\n[====================INFO====================]")
+    for k, v in args.__dict__.items():
+        print(f"{k}={v!r}")
+    print(f"\n")
+
     main(args)
