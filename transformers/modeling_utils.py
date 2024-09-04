@@ -59,6 +59,7 @@ from .quantizers import AutoHfQuantizer, HfQuantizer
 from .quantizers.quantizers_utils import get_module_from_name
 from .safetensors_conversion import auto_conversion
 from .utils import (
+    ACCELERATE_MIN_VERSION,
     ADAPTER_SAFE_WEIGHTS_NAME,
     ADAPTER_WEIGHTS_NAME,
     CONFIG_NAME,
@@ -2570,26 +2571,21 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
         # Save the config
         if is_main_process:
             if not _hf_peft_config_loaded:
+                # If the model config has set attributes that should be in the generation config, move them there.
+                misplaced_generation_parameters = model_to_save.config._get_non_default_generation_parameters()
+                if self.can_generate() and len(misplaced_generation_parameters) > 0:
+                    warnings.warn(
+                        "Moving the following attributes in the config to the generation config: "
+                        f"{misplaced_generation_parameters}. You are seeing this warning because you've set "
+                        "generation parameters in the model config, as opposed to in the generation config.",
+                        UserWarning,
+                    )
+                    for param_name, param_value in misplaced_generation_parameters.items():
+                        setattr(model_to_save.generation_config, param_name, param_value)
+                        setattr(model_to_save.config, param_name, None)
+
                 model_to_save.config.save_pretrained(save_directory)
             if self.can_generate():
-                # generation config built from the model config + the model config holds generation kwargs -> generate
-                # may revert to legacy behavior if the two don't match
-                if (
-                    model_to_save.generation_config._from_model_config
-                    and model_to_save.config._has_non_default_generation_parameters()
-                ):
-                    new_generation_config = GenerationConfig.from_model_config(model_to_save.config)
-                    if new_generation_config != model_to_save.generation_config:
-                        logger.warning(
-                            "Your generation config was originally created from the model config, but the model "
-                            "config has changed since then. Unless you pass the `generation_config` argument to this "
-                            "model's `generate` calls, they will revert to the legacy behavior where the base "
-                            "`generate` parameterization is loaded from the model config instead. "
-                            "To avoid this behavior and this warning, we recommend you to overwrite the generation "
-                            "config model attribute before calling the model's `save_pretrained`, preferably also "
-                            "removing any generation kwargs from the model config. This warning will be raised to an "
-                            "exception in v4.41."
-                        )
                 model_to_save.generation_config.save_pretrained(save_directory)
 
             if _hf_peft_config_loaded:
@@ -2767,7 +2763,7 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
         if module_map:
             filename_to_tensors = logging.tqdm(filename_to_tensors, desc="Saving checkpoint shards")
         for shard_file, tensors in filename_to_tensors:
-            shard = {tensor: state_dict[tensor] for tensor in tensors}
+            shard = {tensor: state_dict[tensor].contiguous() for tensor in tensors}
             # remake shard with onloaded parameters if necessary
             if module_map:
                 if accelerate_version < version.parse("0.31"):
@@ -2865,38 +2861,54 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
     def cuda(self, *args, **kwargs):
         if getattr(self, "quantization_method", None) == QuantizationMethod.HQQ:
             raise ValueError("`.cuda` is not supported for HQQ-quantized models.")
-        # Checks if the model has been loaded in 8-bit
+        # Checks if the model has been loaded in 4-bit or 8-bit with BNB
         if getattr(self, "quantization_method", None) == QuantizationMethod.BITS_AND_BYTES:
-            raise ValueError(
-                "Calling `cuda()` is not supported for `4-bit` or `8-bit` quantized models. Please use the model as it is, since the"
-                " model has already been set to the correct devices and casted to the correct `dtype`."
-            )
+            if getattr(self, "is_loaded_in_8bit", False):
+                raise ValueError(
+                    "Calling `cuda()` is not supported for `8-bit` quantized models. "
+                    " Please use the model as it is, since the model has already been set to the correct devices."
+                )
+            elif version.parse(importlib.metadata.version("bitsandbytes")) < version.parse("0.43.2"):
+                raise ValueError(
+                    "Calling `cuda()` is not supported for `4-bit` quantized models with the installed version of bitsandbytes. "
+                    f"The current device is `{self.device}`. If you intended to move the model, please install bitsandbytes >= 0.43.2."
+                )
         else:
             return super().cuda(*args, **kwargs)
 
     @wraps(torch.nn.Module.to)
     def to(self, *args, **kwargs):
+        # For BNB/GPTQ models, we prevent users from casting the model to another dytpe to restrict unwanted behaviours.
+        # the correct API should be to load the model with the desired dtype directly through `from_pretrained`.
+        dtype_present_in_args = "dtype" in kwargs
+
+        if not dtype_present_in_args:
+            for arg in args:
+                if isinstance(arg, torch.dtype):
+                    dtype_present_in_args = True
+                    break
+
         if getattr(self, "quantization_method", None) == QuantizationMethod.HQQ:
             raise ValueError("`.to` is not supported for HQQ-quantized models.")
-        # Checks if the model has been loaded in 8-bit
+        # Checks if the model has been loaded in 4-bit or 8-bit with BNB
         if getattr(self, "quantization_method", None) == QuantizationMethod.BITS_AND_BYTES:
-            raise ValueError(
-                "`.to` is not supported for `4-bit` or `8-bit` bitsandbytes models. Please use the model as it is, since the"
-                " model has already been set to the correct devices and casted to the correct `dtype`."
-            )
+            if dtype_present_in_args:
+                raise ValueError(
+                    "You cannot cast a bitsandbytes model in a new `dtype`. Make sure to load the model using `from_pretrained` using the"
+                    " desired `dtype` by passing the correct `torch_dtype` argument."
+                )
+
+            if getattr(self, "is_loaded_in_8bit", False):
+                raise ValueError(
+                    "`.to` is not supported for `8-bit` bitsandbytes models. Please use the model as it is, since the"
+                    " model has already been set to the correct devices and casted to the correct `dtype`."
+                )
+            elif version.parse(importlib.metadata.version("bitsandbytes")) < version.parse("0.43.2"):
+                raise ValueError(
+                    "Calling `to()` is not supported for `4-bit` quantized models with the installed version of bitsandbytes. "
+                    f"The current device is `{self.device}`. If you intended to move the model, please install bitsandbytes >= 0.43.2."
+                )
         elif getattr(self, "quantization_method", None) == QuantizationMethod.GPTQ:
-            # For GPTQ models, we prevent users from casting the model to another dytpe to restrict unwanted behaviours.
-            # the correct API should be to load the model with the desired dtype directly through `from_pretrained`.
-            dtype_present_in_args = False
-
-            if "dtype" not in kwargs:
-                for arg in args:
-                    if isinstance(arg, torch.dtype):
-                        dtype_present_in_args = True
-                        break
-            else:
-                dtype_present_in_args = True
-
             if dtype_present_in_args:
                 raise ValueError(
                     "You cannot cast a GPTQ model in a new `dtype`. Make sure to load the model using `from_pretrained` using the desired"
@@ -3055,7 +3067,7 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
             > Parameters for big model inference
 
             low_cpu_mem_usage(`bool`, *optional*):
-                Tries to not use more than 1x model size in CPU memory (including peak memory) while loading the model.
+                Tries not to use more than 1x model size in CPU memory (including peak memory) while loading the model.
                 Generally should be combined with a `device_map` (such as `"auto"`) for best results.
                 This is an experimental feature and a subject to change at any moment.
                 </Tip>
@@ -3316,7 +3328,7 @@ class PreTrainedModel(nn.Module, ModuleUtilsMixin, GenerationMixin, PushToHubMix
                 )
             elif not is_accelerate_available():
                 raise ImportError(
-                    "Using `low_cpu_mem_usage=True` or a `device_map` requires Accelerate: `pip install accelerate`"
+                    f"Using `low_cpu_mem_usage=True` or a `device_map` requires Accelerate: `pip install 'accelerate>={ACCELERATE_MIN_VERSION}'`"
                 )
 
         # handling bnb config from kwargs, remove after `load_in_{4/8}bit` deprecation.
