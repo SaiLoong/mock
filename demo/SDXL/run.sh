@@ -25,6 +25,7 @@ accelerate launch train_text_to_image_lora_sdxl.py \
   --max_train_steps=15000 \
   --checkpointing_steps=500 \
   --checkpoints_total_limit=3 \
+  --resume_from_checkpoint="latest" \
   --gradient_accumulation_steps=4 \
   --learning_rate=1e-4 \
   --lr_scheduler="cosine_with_restarts" \
