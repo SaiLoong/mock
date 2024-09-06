@@ -40,6 +40,7 @@ from peft import LoraConfig
 from peft.utils import get_peft_model_state_dict
 from torchvision import transforms
 from tqdm.auto import tqdm
+from tqdm.auto import trange
 from transformers import CLIPTextModel, CLIPTokenizer
 
 import diffusers
@@ -125,7 +126,8 @@ def log_validation(
         autocast_ctx = torch.autocast(accelerator.device.type)
 
     with autocast_ctx:
-        for _ in range(args.num_validation_images):
+        # FIX: 改成trange
+        for _ in trange(args.num_validation_images):
             images.append(pipeline(args.validation_prompt, num_inference_steps=30, generator=generator).images[0])
 
     for tracker in accelerator.trackers:
@@ -309,6 +311,11 @@ def parse_args():
     parser.add_argument(
         "--lr_warmup_steps", type=int, default=500, help="Number of steps for the warmup in the lr scheduler."
     )
+    # FIX: 原本没这个参数，默认为1时cosine_with_restarts和cosine完全相同。一般这个值都是整数，但泛化为小数能控制lr结束值不为0
+    parser.add_argument(
+        "--lr_num_cycles", type=float, default=1.,
+        help="The number of hard restarts used in `COSINE_WITH_RESTARTS` scheduler."
+    )
     parser.add_argument(
         "--snr_gamma",
         type=float,
@@ -438,6 +445,13 @@ DATASET_NAME_MAPPING = {
 
 def main():
     args = parse_args()
+
+    # FIX
+    print(f"\n[====================INFO====================]")
+    for k, v in args.__dict__.items():
+        print(f"{k}={v!r}")
+    print(f"\n")
+
     if args.report_to == "wandb" and args.hub_token is not None:
         raise ValueError(
             "You cannot use both --report_to=wandb and --hub_token due to a security risk of exposing your token."
@@ -713,6 +727,8 @@ def main():
         optimizer=optimizer,
         num_warmup_steps=num_warmup_steps_for_scheduler,
         num_training_steps=num_training_steps_for_scheduler,
+        # FIX: num_cycles不为1时，cosine_with_restarts才会区别于cosine
+        num_cycles=args.lr_num_cycles
     )
 
     # Prepare everything with our `accelerator`.
@@ -866,7 +882,9 @@ def main():
             if accelerator.sync_gradients:
                 progress_bar.update(1)
                 global_step += 1
-                accelerator.log({"train_loss": train_loss}, step=global_step)
+                # FIX 观察lr变化
+                lr = lr_scheduler.get_last_lr()[0]
+                accelerator.log({"train_loss": train_loss, "lr": lr}, step=global_step)
                 train_loss = 0.0
 
                 if global_step % args.checkpointing_steps == 0:

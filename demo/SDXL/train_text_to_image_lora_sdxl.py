@@ -1207,6 +1207,7 @@ def main(args):
             if accelerator.sync_gradients:
                 progress_bar.update(1)
                 global_step += 1
+                # FIX 观察lr变化
                 lr = lr_scheduler.get_last_lr()[0]
                 accelerator.log({"train_loss": train_loss, "lr": lr}, step=global_step)
                 train_loss = 0.0
