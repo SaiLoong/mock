@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# @file caption.py
+# @file generate_raw_caption.py
 # @author zhangshilong
 # @date 2024/9/4
 
@@ -7,14 +7,26 @@ import json
 import os
 from collections import OrderedDict
 
-import jsonlines
 import torch
 from PIL import Image
 from tqdm import tqdm
 
-from transformers import CLIPTokenizer
 from transformers import Qwen2VLForConditionalGeneration
 from transformers import Qwen2VLProcessor
+
+
+def read_json(path, *args, **kwargs):
+    with open(path, "r") as file:
+        return json.load(file, *args, **kwargs)
+
+
+def write_json(path, data, ensure_ascii=False, indent=4, *args, **kwargs):
+    with open(path, "w") as file:
+        json.dump(data, file, ensure_ascii=ensure_ascii, indent=indent, *args, **kwargs)
+
+
+# =======================================================================================
+
 
 vl_model_path = "/mnt/workspace/model/Qwen2-VL-7B-Instruct"
 vl_model = Qwen2VLForConditionalGeneration.from_pretrained(
@@ -29,22 +41,22 @@ vl_processor = Qwen2VLProcessor.from_pretrained(vl_model_path)
 
 vl_model.generation_config.update(
     # SD的CLIP只接受77个token，留一些给人为指定标签
-    max_new_tokens=60,
+    max_new_tokens=50,
     # 在准确性和多样性之间权衡
     top_k=50,
-    top_p=0.6,
-    temperature=0.1
+    top_p=1.,
+    temperature=0.5
 )
 
 # 参考自https://github.com/jiayev/GPT4V-Image-Captioner/blob/main/saved_prompts.csv
 prompt = (
-    "As an AI image tagging expert, please provide precise tags for these images to enhance CLIP model's understanding of the content. "
+    "As an AI image tagging expert, please provide precise tags for these images of people to enhance CLIP model's understanding of the content. "
     "Employ succinct keywords or phrases, steering clear of elaborate sentences and extraneous conjunctions. "
     "Prioritize the tags by relevance. "
-    "Your tags should capture key elements such as the main subject, setting, artistic style, composition, image quality, color tone, filter, and camera specifications, and any other tags crucial for the image. "
-    "When tagging photos of people, include specific details like gender, nationality, attire, actions, pose, expressions, accessories, makeup, composition type, age, etc. "
-    "For other image categories, apply appropriate and common descriptive tags as well. "
-    "Recognize and tag any celebrities, well-known landmark or IPs if clearly featured in the image. "
+    "Your tags should first capture key elements of people, include specific details like gender, nationality, attire, actions, pose, expressions, accessories, makeup, composition type, age, etc. "
+    "And then capture other elements such as the main subject, setting, artistic style, composition, image quality, color tone, filter, and camera specifications, and any other tags crucial for the image. "
+    # "For other image categories, apply appropriate and common descriptive tags as well. "
+    # "Recognize and tag any celebrities, well-known landmark or IPs if clearly featured in the image. "
     "Your tags should be accurate, non-duplicative, and within a 20-75 word count range. "
     "These tags will use for image re-creation, so the closer the resemblance to the original image, the better the tag quality. "
     "Tags should be comma-separated. "
@@ -88,30 +100,7 @@ def caption_image(image):
 # =======================================================================================
 
 
-def read_json(path, *args, **kwargs):
-    with open(path, "r") as file:
-        return json.load(file, *args, **kwargs)
-
-
-def write_json(path, data, ensure_ascii=False, indent=4, *args, **kwargs):
-    with open(path, "w") as file:
-        json.dump(data, file, ensure_ascii=ensure_ascii, indent=indent, *args, **kwargs)
-
-
-def read_jsonl(path):
-    with jsonlines.open(path, "r") as f:
-        return list(f.iter(type=dict, skip_invalid=True))
-
-
-def write_jsonl(path, data):
-    with jsonlines.open(path, "w") as f:
-        f.write_all(data)
-
-
-# =======================================================================================
-
-
-image_dir = "/mnt/workspace/dataset/yuer/train2"  # TODO debug
+image_dir = "/mnt/workspace/dataset/yuer/train"
 filenames = [filename for filename in os.listdir(image_dir) if filename.endswith(".jpg")]
 filenames.sort()
 
@@ -121,32 +110,17 @@ if os.path.isfile(raw_caption_path):
 else:
     raw_caption = dict()
 
-for filename in tqdm(filenames):
+# 3.57s/it
+for idx, filename in enumerate(tqdm(filenames)):
     if filename in raw_caption:
         continue
 
     image = Image.open(os.path.join(image_dir, filename))
     caption = caption_image(image)
 
-    print(f"[{filename}] {caption}")
+    if idx % 10 == 0:
+        print(f"[{filename}] {caption}")
     raw_caption[filename] = caption
 
 raw_caption = OrderedDict(sorted(raw_caption.items()))
 write_json(raw_caption_path, raw_caption)
-
-# =======================================================================================
-
-
-# 后处理
-sd_model_path = "/mnt/workspace/model/stable-diffusion-v1-5"
-clip_tokenizer = CLIPTokenizer.from_pretrained(sd_model_path, subfolder="tokenizer")
-
-metadata = list()
-for filename, caption in raw_caption.items():
-    caption = caption.rsplit(",", 1)[0]  # 最后的标签可能不完整
-    caption = "Yuer, 1girl, solo, " + caption
-    assert len(clip_tokenizer(caption).input_ids) <= clip_tokenizer.model_max_length
-    metadata.append({"file_name": filename, "text": caption})
-
-metadata_path = os.path.join(image_dir, "metadata.jsonl")
-write_jsonl(metadata_path, metadata)
