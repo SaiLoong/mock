@@ -163,3 +163,17 @@ plot_images(select_images, n_cols=5, suptitle=f"AWportrait_v14生成结果抽样
 
 for idx, (filename, prompt) in enumerate(zip(select_filenames, select_prompts), start=1):
     print(f"[{idx}]\n{filename}\n{prompt}\n")
+
+"""
+
+8330_17.jpg
+1girl, young woman, Asian, solo, outdoor, Yuer, park, portrait, 20-year-old, forest, green trees, sunlight, white dress, straw hat, long hair, gentle expression, natural light, nature, summer, day time, casual, serene, peaceful, relaxed, light makeup
+
+8315_09.jpg
+Asian, female, Yuer, 1girl, solo, 20-year-old, young, white dress, hat, straw hat, white table, white fence, pink flowers, green leaves, outdoor, garden, nature, summer, casual, serene, soft lighting, high resolution, vibrant colors, portrait
+
+
+7557_27.jpg
+solo, woman, Yuer, Asian, long dark hair, 1girl, 20-year-old, off-the-shoulder sweater, portrait, holding candle, chandelier, soft lighting, flowers, indoor setting, serene expression, warm colors, elegant, artistic, high-quality image, detailed, natural, modern
+
+"""
