@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-# @file verify_caption.py
+# @file aw_generate_image_by_metadata.py
 # @author zhangshilong
 # @date 2024/9/4
 
+import json
 import math
 import os
+import random
 
 import jsonlines
 import matplotlib.pyplot as plt
@@ -13,11 +15,22 @@ from matplotlib.axes import Axes
 from PIL import Image
 from tqdm import tqdm
 
+from diffusers import DPMSolverMultistepScheduler
 from diffusers import StableDiffusionPipeline
 from diffusers.utils import pt_to_pil
 
 plt.rcParams["font.sans-serif"] = ["SimHei"]  # 正确显示中文
 plt.rcParams["axes.unicode_minus"] = False  # 正确显示负号“-”
+
+
+def read_json(path, *args, **kwargs):
+    with open(path, "r") as file:
+        return json.load(file, *args, **kwargs)
+
+
+def read_jsonl(path):
+    with jsonlines.open(path, "r") as f:
+        return list(f.iter(type=dict, skip_invalid=True))
 
 
 def plot_images(images, n_rows=None, n_cols=None, suptitle=None, titles=None, scale=1.):
@@ -59,6 +72,13 @@ def plot_images(images, n_rows=None, n_cols=None, suptitle=None, titles=None, sc
     plt.show()
 
 
+def plot_image_with_prompt(image, prompt):
+    plt.imshow(image)
+    plt.axis("off")
+    plt.show()
+    print(prompt, "\n\n")
+
+
 # ================================================================================================================
 
 
@@ -66,6 +86,10 @@ model_path = "/mnt/workspace/model/awportrait_v14"
 pipe = StableDiffusionPipeline.from_pretrained(model_path, torch_dtype=torch.float16)
 pipe.safety_checker = None
 pipe = pipe.to("cuda")
+
+# DPM++ 2M Karras
+assert isinstance(pipe.scheduler, DPMSolverMultistepScheduler)
+assert pipe.scheduler.config["use_karras_sigmas"] is True
 
 
 def generate(prompt):
@@ -83,39 +107,59 @@ def generate(prompt):
 # ================================================================================================================
 
 
-def read_jsonl(path):
-    with jsonlines.open(path, "r") as f:
-        return list(f.iter(type=dict, skip_invalid=True))
-
-
-image_dir = "/mnt/workspace/dataset/yuer/train2"
+image_dir = "/mnt/workspace/dataset/yuer/train"
 metadata_path = os.path.join(image_dir, "metadata.jsonl")
 metadata = read_jsonl(metadata_path)
-N = len(metadata)
+
+generate_dir = "/mnt/workspace/output/yuer_awportrait_v14_generate"
+os.makedirs(generate_dir, exist_ok=True)
 
 # ================================================================================================================
 
 
-# BUG 容易生成娃娃脸
-generate_dir = "/mnt/workspace/output/yuer_awportrait_v14_generate"
-os.makedirs(generate_dir, exist_ok=True)
-images = list()
-titles = list()
-
-for meta in tqdm(metadata):
+# 抽样
+for meta in random.sample(metadata, k=5):
     filename = meta["file_name"]
     prompt = meta["text"]
-    title = filename
-
-    prompt = prompt.replace("Yuer, ", "")
-    print(f"[{filename}] {prompt}")
-
     image = generate(prompt)
 
-    images.append(image)
-    titles.append(title)
+    plot_image_with_prompt(image, prompt)
 
     generate_path = os.path.join(generate_dir, filename)
     image.save(generate_path, quality=95, subsampling=0)
 
-plot_images(images, n_cols=10, suptitle=f"AWportrait_v14生成结果（共{N}张）", titles=titles, scale=0.15)
+# ================================================================================================================
+
+
+# 全量
+pipe.set_progress_bar_config(disable=True)
+meta_dict = dict()
+# 3.15s/it
+for meta in tqdm(metadata):
+    filename = meta["file_name"]
+    prompt = meta["text"]
+
+    generate_path = os.path.join(generate_dir, filename)
+    if os.path.isfile(generate_path):
+        image = Image.open(generate_path)
+    else:
+        image = generate(prompt)
+        image.save(generate_path, quality=95, subsampling=0)
+
+    meta_dict[filename] = (prompt, image)
+
+# ================================================================================================================
+
+
+# 抽样展示
+N = 10
+reserved_filenames = ["8330_17.jpg", "8315_09.jpg", "7557_27.jpg"]
+candidate_filenames = set(meta_dict.keys()).difference(reserved_filenames)
+select_filenames = reserved_filenames + random.sample(candidate_filenames, k=N - len(reserved_filenames))
+
+select_prompts, select_images = zip(*[meta_dict[filename] for filename in select_filenames])
+
+plot_images(select_images, n_cols=5, suptitle=f"AWportrait_v14生成结果抽样", titles=select_filenames, scale=0.6)
+
+for idx, (filename, prompt) in enumerate(zip(select_filenames, select_prompts), start=1):
+    print(f"[{idx}]\n{filename}\n{prompt}\n")

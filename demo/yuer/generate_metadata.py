@@ -32,22 +32,26 @@ def write_jsonl(path, data):
 # =======================================================================================
 
 
-# 抽查raw_caption有没问题
-image_dir = "/mnt/workspace/dataset/yuer/train"
-filenames = [filename for filename in os.listdir(image_dir) if filename.endswith(".jpg")]
-filenames.sort()
-
-raw_caption_path = os.path.join(image_dir, "raw_caption.json")
-raw_caption = read_json(raw_caption_path)
-
-for filename in random.sample(filenames, k=5):
+def plot_image_with_caption(filename, caption):
     image = Image.open(os.path.join(image_dir, filename))
-    caption = raw_caption[filename]
-
     plt.imshow(image)
     plt.axis("off")
     plt.show()
     print(caption, "\n\n")
+
+
+# 抽查raw_caption有没问题
+image_dir = "/mnt/workspace/dataset/yuer/train"
+filenames = [filename for filename in os.listdir(image_dir) if filename.endswith(".jpg")]
+filenames.sort()
+random_filenames = sorted(random.sample(filenames, k=5))
+
+raw_caption_path = os.path.join(image_dir, "raw_caption.json")
+raw_caption = read_json(raw_caption_path)
+
+for filename in random_filenames:
+    caption = raw_caption[filename]
+    plot_image_with_caption(filename, caption)
 
 # =======================================================================================
 
@@ -75,6 +79,9 @@ for filename in filenames:
     caption = ", ".join(tags)
     assert len(clip_tokenizer(caption).input_ids) <= clip_tokenizer.model_max_length
     metadata.append({"file_name": filename, "text": caption})
+
+    if filename in random_filenames:
+        plot_image_with_caption(filename, caption)
 
 metadata_path = os.path.join(image_dir, "metadata.jsonl")
 write_jsonl(metadata_path, metadata)

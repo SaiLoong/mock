@@ -110,7 +110,7 @@ if os.path.isfile(raw_caption_path):
 else:
     raw_caption = dict()
 
-# 3.57s/it
+# 3.57s/it，408张耗时24:21
 for idx, filename in enumerate(tqdm(filenames)):
     if filename in raw_caption:
         continue
