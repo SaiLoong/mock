@@ -44,7 +44,7 @@ from tqdm.auto import trange
 from transformers import CLIPTextModel, CLIPTokenizer
 
 import diffusers
-from diffusers import AutoencoderKL, DDPMScheduler, DiffusionPipeline, StableDiffusionPipeline, UNet2DConditionModel
+from diffusers import AutoencoderKL, DDPMScheduler, DiffusionPipeline, StableDiffusionPipeline, UNet2DConditionModel, DPMSolverMultistepScheduler
 from diffusers.optimization import get_scheduler
 from diffusers.training_utils import cast_training_params, compute_snr
 from diffusers.utils import check_min_version, convert_state_dict_to_diffusers, is_wandb_available
@@ -110,6 +110,8 @@ def log_validation(
     epoch,
     is_final_validation=False,
 ):
+    # FIX
+    pipeline.safety_checker = None
     logger.info(
         f"Running validation... \n Generating {args.num_validation_images} images with prompt:"
         f" {args.validation_prompt}."
@@ -125,10 +127,21 @@ def log_validation(
     else:
         autocast_ctx = torch.autocast(accelerator.device.type)
 
+    # TODO temp
+    # DPM++ 2M Karras
+    assert isinstance(pipeline.scheduler, DPMSolverMultistepScheduler)
+    assert pipeline.scheduler.config["use_karras_sigmas"] is True
+    negative_prompt = "ng_deepnegative_v1_75t,(badhandv4:1.2),(worst quality:2),(low quality:2),(normal quality:2),lowres,bad anatomy,bad hands,((monochrome)),((grayscale)) watermark,moles,large breast,big breast,long fingers:1 bad hand:1,many legs,many shoes,"
+
     with autocast_ctx:
         # FIX: 改成trange
         for _ in trange(args.num_validation_images):
-            images.append(pipeline(args.validation_prompt, num_inference_steps=30, generator=generator).images[0])
+            # TODO temp
+            images.append(pipeline(
+                args.validation_prompt, negative_prompt=negative_prompt, generator=generator,
+                num_inference_steps=40, guidance_scale=7,
+                height=args.height, width=args.width
+            ).images[0])
 
     for tracker in accelerator.trackers:
         phase_name = "test" if is_final_validation else "validation"
@@ -243,24 +256,28 @@ def parse_args():
         help="The directory where the downloaded models and datasets will be stored.",
     )
     parser.add_argument("--seed", type=int, default=None, help="A seed for reproducible training.")
-    parser.add_argument(
-        "--resolution",
-        type=int,
-        default=512,
-        help=(
-            "The resolution for input images, all the images in the train/validation dataset will be resized to this"
-            " resolution"
-        ),
-    )
-    parser.add_argument(
-        "--center_crop",
-        default=False,
-        action="store_true",
-        help=(
-            "Whether to center crop the input images to the resolution. If not set, the images will be randomly"
-            " cropped. The images will be resized to the resolution first before cropping."
-        ),
-    )
+    # TODO temp height固定768, width固定512
+    # parser.add_argument(
+    #     "--resolution",
+    #     type=int,
+    #     default=512,
+    #     help=(
+    #         "The resolution for input images, all the images in the train/validation dataset will be resized to this"
+    #         " resolution"
+    #     ),
+    # )
+    parser.add_argument("--height", type=int, default=768, help="height")
+    parser.add_argument("--width", type=int, default=512, help="width")
+    # TODO temp
+    # parser.add_argument(
+    #     "--center_crop",
+    #     default=False,
+    #     action="store_true",
+    #     help=(
+    #         "Whether to center crop the input images to the resolution. If not set, the images will be randomly"
+    #         " cropped. The images will be resized to the resolution first before cropping."
+    #     ),
+    # )
     parser.add_argument(
         "--random_flip",
         action="store_true",
@@ -670,8 +687,9 @@ def main():
     # Preprocessing the datasets.
     train_transforms = transforms.Compose(
         [
-            transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
-            transforms.CenterCrop(args.resolution) if args.center_crop else transforms.RandomCrop(args.resolution),
+            # TODO temp 已经保证数据集是width=1024、height=1536
+            transforms.Resize((args.height, args.width), interpolation=transforms.InterpolationMode.BILINEAR),
+            # transforms.CenterCrop(args.resolution) if args.center_crop else transforms.RandomCrop(args.resolution),
             transforms.RandomHorizontalFlip() if args.random_flip else transforms.Lambda(lambda x: x),
             transforms.ToTensor(),
             transforms.Normalize([0.5], [0.5]),
@@ -694,6 +712,14 @@ def main():
             dataset["train"] = dataset["train"].shuffle(seed=args.seed).select(range(args.max_train_samples))
         # Set the training transforms
         train_dataset = dataset["train"].with_transform(preprocess_train)
+
+        # TODO temp 保证数据集原图是width=1024、height=1536，转化后是width=512、height=768
+        for example in train_dataset:
+            image = example["image"]
+            pixel_values = example["pixel_values"]
+            filename = os.path.basename(image.filename)
+            assert image.size == (args.width * 2, args.height * 2), f"{filename}的原图尺寸是{image.size}"
+            assert pixel_values.shape == (3, args.height, args.width), f"{filename}的pixel_values形状是{pixel_values.shape}"
 
     def collate_fn(examples):
         pixel_values = torch.stack([example["pixel_values"] for example in examples])
@@ -801,6 +827,22 @@ def main():
         # Only show the progress bar once on each machine.
         disable=not accelerator.is_local_main_process,
     )
+
+    # TODO temp 训练前预测一次，看初始效果
+    if accelerator.is_main_process:
+        if args.validation_prompt is not None:
+            # create pipeline
+            pipeline = DiffusionPipeline.from_pretrained(
+                args.pretrained_model_name_or_path,
+                unet=unwrap_model(unet),
+                revision=args.revision,
+                variant=args.variant,
+                torch_dtype=weight_dtype,
+            )
+            images = log_validation(pipeline, args, accelerator, -1)
+
+            del pipeline
+            torch.cuda.empty_cache()
 
     for epoch in range(first_epoch, args.num_train_epochs):
         unet.train()
