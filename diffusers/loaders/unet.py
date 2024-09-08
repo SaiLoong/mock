@@ -316,7 +316,14 @@ class UNet2DConditionLoadersMixin:
                 if "lora_B" in key:
                     rank[key] = val.shape[1]
 
+            # TODO
+            print(f"[_process_lora 1] {network_alphas=}")
+
             lora_config_kwargs = get_peft_kwargs(rank, network_alphas, state_dict, is_unet=True)
+
+            # TODO
+            print(f"[_process_lora 2] {lora_config_kwargs=}")
+
             if "use_dora" in lora_config_kwargs:
                 if lora_config_kwargs["use_dora"]:
                     if is_peft_version("<", "0.9.0"):

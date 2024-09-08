@@ -148,9 +148,16 @@ def unscale_lora_layers(model, weight: Optional[float] = None):
 
 
 def get_peft_kwargs(rank_dict, network_alpha_dict, peft_state_dict, is_unet=True):
+
+    # TODO
+    print(f"[get_peft_kwargs 1] {rank_dict=} {network_alpha_dict=}")
+
     rank_pattern = {}
     alpha_pattern = {}
     r = lora_alpha = list(rank_dict.values())[0]
+
+    # TODO
+    print(f"[get_peft_kwargs 2] {r=} {lora_alpha=}")
 
     if len(set(rank_dict.values())) > 1:
         # get the rank occuring the most number of times
@@ -176,6 +183,9 @@ def get_peft_kwargs(rank_dict, network_alpha_dict, peft_state_dict, is_unet=True
                 alpha_pattern = {".".join(k.split(".down.")[0].split(".")[:-1]): v for k, v in alpha_pattern.items()}
         else:
             lora_alpha = set(network_alpha_dict.values()).pop()
+
+    # TODO
+    print(f"[get_peft_kwargs 3] {r=} {lora_alpha=}")
 
     # layer names without the Diffusers specific
     target_modules = list({name.split(".lora")[0] for name in peft_state_dict.keys()})
